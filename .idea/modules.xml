@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../hashtop-daemon/.idea/hashtop-daemon.iml" filepath="$PROJECT_DIR$/../hashtop-daemon/.idea/hashtop-daemon.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/miner-wrangler.iml" filepath="$PROJECT_DIR$/.idea/miner-wrangler.iml" />
     </modules>
   </component>
