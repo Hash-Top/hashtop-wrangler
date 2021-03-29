@@ -18,6 +18,7 @@ from sqlalchemy.orm import (
 )
 import urllib
 import os
+from datetime import datetime
 
 load_dotenv()
 AZURE_CONNECT_STRING = os.getenv("AZURE_CONNECT_STRING")
@@ -31,19 +32,22 @@ Base = declarative_base()
 class User(Base):
     __tablename__ = "user"
 
-    id = Column(UNIQUEIDENTIFIER, primary_key=True, default=uuid.uuid4())
+    #id = Column(UNIQUEIDENTIFIER, primary_key=True, default=uuid.uuid4())
+    wallet_addr = Column(String(42), primary_key=True)
     fname = Column(String)
     lname = Column(String)
-    wallet_addr = Column(String(42))
 
     miners = relationship("Miner", back_populates="user")
     stats = relationship("UserStat", back_populates="user")
 
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
 class UserStat(Base):
     __tablename__ = "userStat"
 
-    time = Column(DateTime, primary_key=True)
-    user_id = Column(UNIQUEIDENTIFIER, ForeignKey("user.id"), primary_key=True)
+    time = Column(DateTime, default=datetime.now(), primary_key=True)
+    wallet_addr = Column(String(42), ForeignKey("user.wallet_addr"), primary_key=True)
     user = relationship("User", back_populates="stats")
 
     balance = Column(Float)
@@ -52,16 +56,22 @@ class UserStat(Base):
     stale_shares = Column(Integer)
     invalid_shares = Column(Integer)
     round_share_percent = Column(Float)
-    hash_rate = Column(Float)
+    effective_hashrate = Column(Float)
+
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 class Miner(Base):
     __tablename__ = "miner"
 
     id = Column(UNIQUEIDENTIFIER, primary_key=True, default=uuid.uuid4())
-    user_id = Column(UNIQUEIDENTIFIER, ForeignKey("user.id"))
+    wallet_addr = Column(String(42), ForeignKey("user.wallet_addr"))
     user = relationship("User", back_populates="miners")
 
     gpus = relationship("Gpu", back_populates="miner")
+
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 class Gpu(Base):
     __tablename__ = "gpu"
@@ -70,6 +80,10 @@ class Gpu(Base):
     gpu_no = Column(Integer, primary_key=True)
     miner = relationship("Miner", back_populates="gpus")
 
+    healths = relationship("Health")
+
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 class Health(Base):
     __tablename__ = "health"
@@ -82,11 +96,14 @@ class Health(Base):
     # don't need backpopulates because we only ever insert into this table
     miner_id = Column(UNIQUEIDENTIFIER, primary_key=True)
     gpu_no = Column(Integer, primary_key=True)
-    parent = relationship(
-        "Gpu",
-        foreign_keys="[Health.miner_id, Health.gpu_no]",
-    )
 
-    time = Column(DateTime)
+    time = Column(DateTime, default=datetime.now(), primary_key=True)
+
     temperature = Column(Integer)
+    power = Column(Integer)
+    hashrate = Column(Float)
 
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+#Base.metadata.create_all(engine)
