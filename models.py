@@ -12,6 +12,7 @@ from sqlalchemy import (
     ForeignKeyConstraint,
 
 )
+
 from sqlalchemy.orm import (
     declarative_base,
     relationship,
@@ -37,8 +38,8 @@ class User(Base):
     fname = Column(String)
     lname = Column(String)
 
-    miners = relationship("Miner", back_populates="user")
-    stats = relationship("UserStat", back_populates="user")
+    miners = relationship("Miner", back_populates="user", cascade="all, delete-orphan")
+    stats = relationship("UserStat", back_populates="user", cascade="all, delete-orphan")
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
@@ -47,7 +48,7 @@ class UserStat(Base):
     __tablename__ = "userStat"
 
     time = Column(DateTime, default=datetime.now(), primary_key=True)
-    wallet_addr = Column(String(42), ForeignKey("user.wallet_addr"), primary_key=True)
+    wallet_addr = Column(String(42), ForeignKey("user.wallet_addr", ondelete="CASCADE"), primary_key=True)
     user = relationship("User", back_populates="stats")
 
     balance = Column(Float)
@@ -65,10 +66,10 @@ class Miner(Base):
     __tablename__ = "miner"
 
     id = Column(UNIQUEIDENTIFIER, primary_key=True, default=uuid.uuid4())
-    wallet_addr = Column(String(42), ForeignKey("user.wallet_addr"))
+    wallet_addr = Column(String(42), ForeignKey("user.wallet_addr", ondelete="CASCADE"))
     user = relationship("User", back_populates="miners")
 
-    gpus = relationship("Gpu", back_populates="miner")
+    gpus = relationship("Gpu", back_populates="miner", cascade="all, delete-orphan")
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
@@ -76,11 +77,11 @@ class Miner(Base):
 class Gpu(Base):
     __tablename__ = "gpu"
 
-    miner_id = Column(UNIQUEIDENTIFIER, ForeignKey("miner.id"), primary_key=True)
+    miner_id = Column(UNIQUEIDENTIFIER, ForeignKey("miner.id", ondelete="CASCADE"), primary_key=True)
     gpu_no = Column(Integer, primary_key=True)
     miner = relationship("Miner", back_populates="gpus")
 
-    healths = relationship("Health")
+    healths = relationship("Health", cascade="all, delete-orphan")
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
@@ -89,7 +90,8 @@ class Health(Base):
     __tablename__ = "health"
     __table_args__ = (
         ForeignKeyConstraint(
-            ["miner_id", "gpu_no"], ["gpu.miner_id", "gpu.gpu_no"]
+            ["miner_id", "gpu_no"], ["gpu.miner_id", "gpu.gpu_no"],
+            ondelete="CASCADE"
         ),
     )
 
