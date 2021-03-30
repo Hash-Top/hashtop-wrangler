@@ -1,111 +1,85 @@
-from dotenv import load_dotenv
 import uuid
 from sqlalchemy.dialects.mssql import UNIQUEIDENTIFIER
-from sqlalchemy import (
-    create_engine,
-    Column,
-    Integer,
-    String,
-    ForeignKey,
-    DateTime,
-    Float,
-    ForeignKeyConstraint,
-
-)
-
-from sqlalchemy.orm import (
-    declarative_base,
-    relationship,
-)
-import urllib
-import os
+from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
-load_dotenv()
-AZURE_CONNECT_STRING = os.getenv("AZURE_CONNECT_STRING")
-params = urllib.parse.quote(AZURE_CONNECT_STRING)
-conn_str = 'mssql+pyodbc:///?odbc_connect={}'.format(params)
-engine = create_engine(conn_str,echo=True)
+db = SQLAlchemy()
 
-
-Base = declarative_base()
-
-class User(Base):
+class User(db.Model):
     __tablename__ = "user"
 
-    #id = Column(UNIQUEIDENTIFIER, primary_key=True, default=uuid.uuid4())
-    wallet_addr = Column(String(42), primary_key=True)
-    fname = Column(String)
-    lname = Column(String)
+    wallet_addr = db.Column(db.String(42), primary_key=True)
+    fname = db.Column(db.String)
+    lname = db.Column(db.String)
 
-    miners = relationship("Miner", back_populates="user", cascade="all, delete-orphan")
-    stats = relationship("UserStat", back_populates="user", cascade="all, delete-orphan")
+    miners = db.relationship("Miner", back_populates="user", cascade="all, delete-orphan")
+    stats = db.relationship("UserStat", back_populates="user", cascade="all, delete-orphan")
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
-class UserStat(Base):
+class UserStat(db.Model):
     __tablename__ = "userStat"
 
-    time = Column(DateTime, default=datetime.now(), primary_key=True)
-    wallet_addr = Column(String(42), ForeignKey("user.wallet_addr", ondelete="CASCADE"), primary_key=True)
-    user = relationship("User", back_populates="stats")
+    time = db.Column(db.DateTime, default=datetime.now(), primary_key=True)
+    wallet_addr = db.Column(db.String(42), db.ForeignKey("user.wallet_addr", ondelete="CASCADE"), primary_key=True)
+    user = db.relationship("User", back_populates="stats")
 
-    balance = Column(Float)
-    est_revenue = Column(Float)
-    valid_shares = Column(Integer)
-    stale_shares = Column(Integer)
-    invalid_shares = Column(Integer)
-    round_share_percent = Column(Float)
-    effective_hashrate = Column(Float)
+    balance = db.Column(db.Float)
+    est_revenue = db.Column(db.Float)
+    valid_shares = db.Column(db.Integer)
+    stale_shares = db.Column(db.Integer)
+    invalid_shares = db.Column(db.Integer)
+    round_share_percent = db.Column(db.Float)
+    effective_hashrate = db.Column(db.Float)
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
-class Miner(Base):
+class Miner(db.Model):
     __tablename__ = "miner"
 
-    id = Column(UNIQUEIDENTIFIER, primary_key=True, default=uuid.uuid4())
-    wallet_addr = Column(String(42), ForeignKey("user.wallet_addr", ondelete="CASCADE"))
-    user = relationship("User", back_populates="miners")
+    id = db.Column(UNIQUEIDENTIFIER, primary_key=True, default=uuid.uuid4())
+    wallet_addr = db.Column(db.String(42), db.ForeignKey("user.wallet_addr", ondelete="CASCADE"))
+    user = db.relationship("User", back_populates="miners")
 
-    gpus = relationship("Gpu", back_populates="miner", cascade="all, delete-orphan")
+    gpus = db.relationship("Gpu", back_populates="miner", cascade="all, delete-orphan")
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
-class Gpu(Base):
+class Gpu(db.Model):
     __tablename__ = "gpu"
 
-    miner_id = Column(UNIQUEIDENTIFIER, ForeignKey("miner.id", ondelete="CASCADE"), primary_key=True)
-    gpu_no = Column(Integer, primary_key=True)
-    miner = relationship("Miner", back_populates="gpus")
+    miner_id = db.Column(UNIQUEIDENTIFIER, db.ForeignKey("miner.id", ondelete="CASCADE"), primary_key=True)
+    gpu_no = db.Column(db.Integer, primary_key=True)
+    miner = db.relationship("Miner", back_populates="gpus")
 
-    healths = relationship("Health", cascade="all, delete-orphan")
+    healths = db.relationship("Health", cascade="all, delete-orphan")
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
-class Health(Base):
+class Health(db.Model):
     __tablename__ = "health"
     __table_args__ = (
-        ForeignKeyConstraint(
+        db.ForeignKeyConstraint(
             ["miner_id", "gpu_no"], ["gpu.miner_id", "gpu.gpu_no"],
             ondelete="CASCADE"
         ),
     )
 
     # don't need backpopulates because we only ever insert into this table
-    miner_id = Column(UNIQUEIDENTIFIER, primary_key=True)
-    gpu_no = Column(Integer, primary_key=True)
+    miner_id = db.Column(UNIQUEIDENTIFIER, primary_key=True)
+    gpu_no = db.Column(db.Integer, primary_key=True)
 
-    time = Column(DateTime, default=datetime.now(), primary_key=True)
+    time = db.Column(db.DateTime, default=datetime.now(), primary_key=True)
 
-    temperature = Column(Integer)
-    power = Column(Integer)
-    hashrate = Column(Float)
+    temperature = db.Column(db.Integer)
+    power = db.Column(db.Integer)
+    hashrate = db.Column(db.Float)
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
-#Base.metadata.create_all(engine)
+#db.create_all()
