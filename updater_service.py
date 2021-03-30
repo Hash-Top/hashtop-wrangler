@@ -1,16 +1,10 @@
 from datetime import timedelta
 from sqlalchemy import exc
+from sqlalchemy.orm import Session
 from timeloop import Timeloop
 from models import *
-from wrangler import select_from_db
 import requests
 import logging
-from sqlalchemy.orm import (
-    Session,
-)
-from sqlalchemy import (
-    select,
-)
 
 def setup_logger():
     log_dir = os.path.dirname(os.path.abspath(__file__)) + "/logs/"
@@ -30,14 +24,20 @@ flexpool_url = "https://flexpool.io/api/v1/miner/{}/{}"
 
 @update_loop.job(interval=timedelta(minutes=10))
 def update_all_users_stats():
-    query = select(User)
-    users = select_from_db(query)
-    for u in users:
-        upsert_new_stat(u)
+
+    with Session(engine) as session:
+        users = session.query(User).all()
+        print(users)
+    all_stats = [get_stats(u) for u in users]
+    session.bulk_save_objects(all_stats)
+    try:
+        session.commit()
+    except exc.SQLAlchemyError as e:
+        logger.error(e)
 
 
 # this is called every update interval to query flexpool and update the users stats
-def upsert_new_stat(user):
+def get_stats(user):
     address = user.wallet_addr
     balance = flexpool_balance(address)
     est_revenue = flexpool_est_revenue(address)
@@ -54,12 +54,7 @@ def upsert_new_stat(user):
                     round_share_percent=round_share_percent,
                     effective_hashrate=hashrate
                     )
-    session = Session(engine)
-    session.add(stat)
-    try:
-        session.commit()
-    except exc.SQLAlchemyError as e:
-        logger.error(e)
+    return stat
 
 
 # query flexpool for balance in wei
@@ -117,4 +112,5 @@ def flexpool_hashrate(wallet_addr):
         logger.error(e)
 
 if __name__ == '__main__':
-    update_loop.start(block=True)
+    #update_loop.start(block=True)
+    update_all_users_stats()

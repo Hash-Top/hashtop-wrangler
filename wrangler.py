@@ -1,19 +1,10 @@
-from flask import Flask, request, jsonify
-from dotenv import load_dotenv
-import hashtop_miner
+from flask import Flask, request, jsonify, Response
+from flask_sqlalchemy import SQLAlchemy
+import miner_daemon
 import models
 from models import *
-import uuid
-import urllib
 import os
-from sqlalchemy.orm import (
-    Session,
-    exc,
-
-)
-from sqlalchemy import (
-    select
-)
+from sqlalchemy import exc
 import logging
 
 def setup_logger():
@@ -26,78 +17,87 @@ def setup_logger():
     logger = logging.getLogger(__name__)
 
     return logger
+
 logger = setup_logger()
 
 app = Flask(__name__)
-load_dotenv()
-nathan = User(lname='nathan',
-              fname='plow',
-              wallet_addr='0xc9cFdce5F5DF8e07443Ac2117D462050C8B9d225')
-session = Session(engine)
-# session.add(nathan)
-session.commit()
-
-
-@app.route('/test', methods=['GET'])
-def test():
-    query = select(User)
-
-    with Session(engine) as session:
-        results = []
-        for row in session.execute(query):
-            print(row)
-            results.append(row[0].as_dict())
-        return jsonify(results)
+app.config['JSON_SORT_KEYS'] = False
+app.config["SQLALCHEMY_DATABASE_URI"] = models.conn_str
+# not using flask sqlalchemy for models so they can be used without a flask app
+db = SQLAlchemy(metadata=models.metadata)
+db.init_app(app)
 
 
 @app.route('/user', methods=['POST', 'PUT'])
-def user():
+@app.route('/user/<wallet_addr>', methods=['GET', 'DELETE'])
+def user(wallet_addr = None):
+    # insert a new user into the db
     if request.method == 'POST':
-        new_user = User(fname=request.args['fname'],
-                        lname=request.args['lname'],
-                        wallet_addr=request.args['wallet_addr'],
+        new_user = User(fname=request.args.get('fname'),
+                        lname=request.args.get('lname'),
+                        wallet_addr=request.args.get('wallet_addr'),
                         )
-        session.add(new_user)
-    try:
-        session.commit()
-        return 200
-    except exc.SQLAlchemyError as e:
-        logger.error(e)
+        db.session.add(new_user)
+        try:
+            db.session.commit()
+            return Response(response="New user inserted", status=200, mimetype='text/plain')
+        except exc.SQLAlchemyError as e:
+            response = Response(response=e, status=500, mimetype='text/plain')
+            logger.error(e)
+            return response
+
+    # update a users info but not their stats (name, etc)
+    elif request.method == 'PUT':
+        address = request.args.get('wallet_addr')
+        if address:
+            update_user = db.session.query(User).filter_by(wallet_addr=address)
+            update_user.update(request.args)
+            try:
+                db.session.commit()
+                return Response(response="User updated", status=200, mimetype='text/plain')
+            except exc.SQLAlchemyError as e:
+                response = Response(response=e, status=500, mimetype='text/plain')
+                logger.error(e)
+                return response
+        else:
+            return Response(status=400)
+
+    # get all users stats
+    elif request.method == 'GET':
+        user_stat = db.session.query(UserStat).filter_by(wallet_addr=wallet_addr).first()
+        return jsonify(user_stat.as_dict())
+
+    # delete a user
+    elif request.method == 'DELETE':
+        delete_user = db.session.query(User).filter_by(wallet_addr=wallet_addr).first()
+        db.session.delete(delete_user)
+        try:
+            db.session.commit()
+            return Response(response=wallet_addr+" deleted", status=200, mimetype='text/plain')
+        except exc.SQLAlchemyError as e:
+            response = Response(response=e, status=500, mimetype='text/plain')
+            logger.error(e)
+            return response
 
 
-@app.route('/user/stats/<wallet_addr>', methods=['GET', 'POST'])
-def user_stats(wallet_addr):
+
+@app.route('/miner/stats/<miner_id>', methods=['GET', 'POST'])
+def miner_stats(miner_id):
     if request.method == 'GET':
-        query = select(UserStat).\
-            where(UserStat.wallet_addr == wallet_addr)
-        with Session(engine) as session:
-            results = []
-            for row in session.execute(query):
-                print(row)
-                results.append(row[0].as_dict())
-            return jsonify(results)
-
-
-@app.route('/miner/stats/<miner_uuid>', methods=['GET'])
-def miner_stats(miner_uuid):
-    params = {
-        ""
-    }
-    if request.method == 'POST':
-        # if the miner is already there, return its stats
-        if Miner.objects(id=miner_uuid):
-            Miner.objects()
-            request.json
-
-    else:
-        jsonify({
-
+        miner = db.session.query(Miner).filter_by(id=miner_id).first()
+        gpus = db.session.query(Gpu).filter_by(miner=miner)
+        miner_dict = miner.as_dict()
+        gpus = [g.as_dict() for g in gpus]
+        return jsonify({
+            'miner': miner_dict,
+            'gpus': gpus
         })
+
 
 
 # endpoint for the daemon to update the health of the miner
 # and for the daemon to set any new configurations
-@app.route('/minerd/<miner_uuid>', methods=['GET', 'POST'])
+@app.route('/health', methods=['POST'])
 def hashtop_daemon_wrangler(miner_uuid):
     return 200
 
