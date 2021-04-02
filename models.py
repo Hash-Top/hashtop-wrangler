@@ -37,8 +37,12 @@ class User(Base):
     fname = Column(String)
     lname = Column(String)
 
-    miners = relationship("Miner", back_populates="user", cascade="all, delete-orphan")
-    stats = relationship("UserStat", back_populates="user", cascade="all, delete-orphan")
+    miners = relationship("Miner",
+                          back_populates="user",
+                          cascade="all, delete-orphan")
+    stats = relationship("UserStat",
+                         back_populates="user",
+                         cascade="all, delete-orphan")
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
@@ -53,7 +57,10 @@ class UserStat(Base):
     __tablename__ = "userStat"
 
     time = Column(DateTime, default=datetime.now(), primary_key=True)
-    wallet_addr = Column(String(42), ForeignKey("user.wallet_addr", ondelete="CASCADE"), primary_key=True)
+    wallet_addr = Column(String(42),
+                         ForeignKey("user.wallet_addr",
+                                    ondelete="CASCADE"),
+                         primary_key=True)
     user = relationship("User", back_populates="stats")
 
     balance = Column(Float)
@@ -70,11 +77,17 @@ class UserStat(Base):
 class Miner(Base):
     __tablename__ = "miner"
 
-    id = Column(UNIQUEIDENTIFIER, primary_key=True, default=uuid.uuid4())
-    wallet_addr = Column(String(42), ForeignKey("user.wallet_addr", ondelete="CASCADE"))
+    id = Column(UNIQUEIDENTIFIER,
+                primary_key=True,
+                default=uuid.uuid4())
+    wallet_addr = Column(String(42),
+                         ForeignKey("user.wallet_addr",
+                                    ondelete="CASCADE"))
     user = relationship("User", back_populates="miners")
 
-    gpus = relationship("Gpu", back_populates="miner", cascade="all, delete-orphan")
+    gpus = relationship("Gpu",
+                        back_populates="miner",
+                        cascade="all, delete-orphan")
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
@@ -82,11 +95,15 @@ class Miner(Base):
 class Gpu(Base):
     __tablename__ = "gpu"
 
-    miner_id = Column(UNIQUEIDENTIFIER, ForeignKey("miner.id", ondelete="CASCADE"), primary_key=True)
-    gpu_no = Column(Integer, primary_key=True)
+    miner_id = Column(UNIQUEIDENTIFIER,
+                      ForeignKey("miner.id",
+                                 ondelete="CASCADE"),
+                      primary_key=True)
     miner = relationship("Miner", back_populates="gpus")
+    gpu_no = Column(Integer, primary_key=True)
 
-    healths = relationship("Health", cascade="all, delete-orphan")
+    healths = relationship("Health",
+                           cascade="all, delete-orphan")
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}

@@ -22,7 +22,8 @@ logger = setup_logger()
 
 app = Flask(__name__)
 app.config['JSON_SORT_KEYS'] = False
-app.config["SQLALCHEMY_DATABASE_URI"] = models.conn_str
+app.config['SQLALCHEMY_DATABASE_URI'] = models.conn_str
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # not using flask sqlalchemy for models so they can be used without a flask app
 db = SQLAlchemy(metadata=models.metadata)
 db.init_app(app)
@@ -79,11 +80,27 @@ def user(wallet_addr = None):
             logger.error(e)
             return response
 
+@app.route('/miner', methods=['POST'])
+@app.route('/miner/<miner_id>', methods=['GET', 'PUT'])
+def miner_stats(miner_id=None):
+    # insert a new miner into the db
+    if request.method == 'POST':
+        address = request.args.get('wallet_addr')
+        user = db.session.query(User).filter_by(wallet_addr=address).first()
+        new_miner = Miner(wallet_addr=address,
+                          user=user)
+        db.session.add(new_miner)
+        try:
+            db.session.commit()
+            return Response(response="New miner inserted", status=200, mimetype='text/plain')
+        except exc.SQLAlchemyError as e:
+            response = Response(response=e, status=500, mimetype='text/plain')
+            logger.error(e)
+            return response
 
-
-@app.route('/miner/stats/<miner_id>', methods=['GET', 'POST'])
-def miner_stats(miner_id):
-    if request.method == 'GET':
+    # get the current health of the miners gpus
+    # TODO: add query param to limit timeframe
+    elif request.method == 'GET':
         miner = db.session.query(Miner).filter_by(id=miner_id).first()
         gpus = db.session.query(Gpu).filter_by(miner=miner)
         miner_dict = miner.as_dict()
@@ -93,18 +110,41 @@ def miner_stats(miner_id):
             'gpus': gpus
         })
 
+    # update the health of the gpus associated with a miner
+    elif request.method == 'PUT':
+        gpus = request.json
+        bulk = []
+        for g in gpus:
 
+            miner = db.session.query(Miner).filter_by(id=miner_id).first()
+            gpu = db.session.query(Gpu).filter_by(miner=miner, gpu_no=g['gpu_no']).first()
 
-# endpoint for the daemon to update the health of the miner
-# and for the daemon to set any new configurations
-@app.route('/health', methods=['POST'])
-def hashtop_daemon_wrangler(miner_uuid):
-    return 200
+            if not gpu:
+                gpu = Gpu(#miner_id=miner_id,
+                          miner=miner,
+                          gpu_no=g['gpu_no'])
 
+            health = Health(#miner_id=miner_id,
+                            #gpu_no=g['gpu_no'],
+                            temperature=g['temperature'],
+                            power=g['power'],
+                            hashrate=g['hashrate'])
+            # update the miners list of gpus
+            miner.gpus.append(gpu)
+            # update the health of the gpu
+            gpu.healths.append(health)
 
-# update miners health from the last 10 secs
-def update_miner_health(miner_uuid, temps):
-    miner = Miner.objects(id=miner_uuid).update()
+            db.session.add(miner)
+            db.session.add(gpu)
+            db.session.add(health)
+
+        try:
+            db.session.commit()
+            return Response(response="Health updated", status=200, mimetype='text/plain')
+        except exc.SQLAlchemyError as e:
+            response = Response(response=e, status=500, mimetype='text/plain')
+            logger.error(e)
+            return response
 
 
 if __name__ == '__main__':
