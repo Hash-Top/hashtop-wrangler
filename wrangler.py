@@ -6,27 +6,34 @@ from models import *
 import os
 from sqlalchemy import exc
 import logging
-
-def setup_logger():
-    log_dir = os.path.dirname(os.path.abspath(__file__)) + "/logs/"
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
-
-    logging.basicConfig(filename=log_dir + "hashtop-wrangler-svc.log", filemode='w', level=logging.DEBUG,
-                        format='%(asctime)s %(levelname)s %(name)s %(message)s')
-    logger = logging.getLogger(__name__)
-
-    return logger
-
-logger = setup_logger()
+from flask_jwt_extended import (
+    create_access_token,
+    get_jwt_identity,
+    jwt_required,
+    JWTManager,
+)
 
 app = Flask(__name__)
 app.config['JSON_SORT_KEYS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = models.conn_str
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET")
+jwt = JWTManager(app)
+
 # not using flask sqlalchemy for models so they can be used without a flask app
 db = SQLAlchemy(metadata=models.metadata)
 db.init_app(app)
+
+
+@app.route("/login", methods=["POST"])
+def login():
+    username = request.json.get("username", None)
+    password = request.json.get("password", None)
+    if username != "test" or password != "test":
+        return jsonify({"msg": "Bad username or password"}), 401
+
+    access_token = create_access_token(identity=username)
+    return jsonify(access_token=access_token)
 
 
 @app.route('/user', methods=['POST', 'PUT'])
@@ -65,8 +72,9 @@ def user(wallet_addr = None):
 
     # get all users stats
     elif request.method == 'GET':
-        user_stat = db.session.query(UserStat).filter_by(wallet_addr=wallet_addr).first()
-        return jsonify(user_stat.as_dict())
+        user_stats = db.session.query(UserStat).filter_by(wallet_addr=wallet_addr).all()
+
+        return jsonify([u.as_dict() for u in user_stats])
 
     # delete a user
     elif request.method == 'DELETE':
@@ -145,6 +153,19 @@ def miner_stats(miner_id=None):
             response = Response(response=e, status=500, mimetype='text/plain')
             logger.error(e)
             return response
+
+def setup_logger():
+    log_dir = os.path.dirname(os.path.abspath(__file__)) + "/logs/"
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+
+    logging.basicConfig(filename=log_dir + "hashtop-wrangler-svc.log", filemode='w', level=logging.DEBUG,
+                        format='%(asctime)s %(levelname)s %(name)s %(message)s')
+    logger = logging.getLogger(__name__)
+
+    return logger
+
+logger = setup_logger()
 
 
 if __name__ == '__main__':
