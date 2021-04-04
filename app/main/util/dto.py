@@ -13,7 +13,7 @@ class UserDto:
 
     stat = api.model('userStat', {
         'time': fields.DateTime(required=True, description="time that the stats were queried"),
-        'wallet_addr': fields.DateTime(required=True, description="which wallet address the stats are for"),
+        'wallet_addr': fields.String(required=True, description="which wallet address the stats are for"),
         'balance': fields.Float(required=False, description="total balance in wei"),
         'est_revenue': fields.Float(required=False, description="flexpools estimated daily revenue in wei"),
         'valid_shares': fields.Float(required=False, description="total valid shares over past 24hrs"),
