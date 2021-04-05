@@ -17,8 +17,8 @@ class User(Base):
     __tablename__ = "user"
 
     wallet_addr = Column(String(42), primary_key=True)
-    username = Column(String(64), index=True, unique=True, nullable=False)
-    email = Column(String(120), index=True, nullable=False)
+    username = Column(String(64), index=True, unique=True)
+    email = Column(String(120), index=True)
     password_hash = Column(String(128))
 
     fname = Column(String(64))
