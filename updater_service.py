@@ -2,6 +2,8 @@ from datetime import timedelta
 from sqlalchemy import exc
 from sqlalchemy.orm import Session
 from timeloop import Timeloop
+
+from app.main.model import UserStat, User
 from models import *
 import requests
 import logging
@@ -37,15 +39,18 @@ def update_all_users_stats():
 
 
 # this is called every update interval to query flexpool and update the users stats
+# TODO: change for user id
+# TODO: make asynchronous
 def get_stats(user):
-    address = user.wallet_addr
+    address = user.wallet_address
     balance = flexpool_balance(address)
     est_revenue = flexpool_est_revenue(address)
     shares = flexpool_shares(address)
     round_share_percent = flexpool_round_share_percent(address)
     hashrate = flexpool_hashrate(address)
 
-    stat = UserStat(wallet_addr=address,
+    stat = UserStat(time=datetime.utcnow(),
+                    wallet_addr=address,
                     balance=balance,
                     est_revenue=est_revenue,
                     valid_shares=shares['valid'],

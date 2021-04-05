@@ -34,5 +34,19 @@ def test():
     return 1
 
 
+@manager.command
+def drop_all():
+    from app.main.model import Base
+    from dotenv import load_dotenv
+    import urllib
+    from sqlalchemy import create_engine
+    load_dotenv()
+    AZURE_CONNECT_STRING = os.getenv("AZURE_CONNECT_STRING")
+    params = urllib.parse.quote(AZURE_CONNECT_STRING)
+    conn_str = 'mssql+pyodbc:///?odbc_connect={}'.format(params)
+    engine = create_engine(conn_str, echo=True)
+    Base.metadata.drop_all(engine)
+
+
 if __name__ == '__main__':
     manager.run()
