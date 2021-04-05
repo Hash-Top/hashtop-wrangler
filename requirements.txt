@@ -1,7 +1,9 @@
-SQLAlchemy==1.4.5
 requests==2.25.1
+alembic==1.5.8
+SQLAlchemy==1.4.5
 dnspython==2.1.0
 Flask==1.1.2
+flask_bcrypt==0.7.1
 flask_jwt_extended==4.1.0
 flask_migrate==2.7.0
 flask_restplus==0.13.0

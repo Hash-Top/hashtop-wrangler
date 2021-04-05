@@ -1,6 +1,8 @@
+import re
 from datetime import datetime
 from . import Base
-from sqlalchemy.orm import relationship
+from .. import bcrypt
+from sqlalchemy.orm import relationship, validates
 from sqlalchemy import (
     Column,
     Integer,
@@ -15,8 +17,12 @@ class User(Base):
     __tablename__ = "user"
 
     wallet_addr = Column(String(42), primary_key=True)
-    fname = Column(String)
-    lname = Column(String)
+    username = Column(String(64), index=True, unique=True, nullable=False)
+    email = Column(String(120), index=True, nullable=False)
+    password_hash = Column(String(128))
+
+    fname = Column(String(64))
+    lname = Column(String(64))
 
     miners = relationship("Miner",
                           back_populates="user",
@@ -33,6 +39,34 @@ class User(Base):
         for key, value in kwargs.items():
             if hasattr(self, key):
                 setattr(self, key, value)
+
+    @validates('username')
+    def validate_username(self, key, username):
+        if not username:
+            raise AssertionError('No username provided')
+        if User.query.filter(User.username == username).first():
+            raise AssertionError('Username is already in use')
+        if len(username) < 5 or len(username) > 20:
+            raise AssertionError('Username must be between 5 and 20 characters')
+        return username @ validates('email')
+
+    def validate_email(self, key, email):
+        if not email:
+            raise AssertionError('No email provided')
+        if not re.match("[^@]+@[^@]+\.[^@]+", email):
+            raise AssertionError('Provided email is not an email address')
+        return email
+
+    @property
+    def password(self):
+        raise AttributeError('password: write-only field')
+
+    @password.setter
+    def password(self, password):
+        self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+
+    def check_password(self, password):
+        return bcrypt.check_password_hash(self.password_hash, password)
 
 
 class UserStat(Base):
