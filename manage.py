@@ -7,8 +7,8 @@ from flask_script import Manager
 from app import blueprint
 from app.main import create_app, db
 from app.main.model import user, miner, gpu
-
-app = create_app(os.getenv('STAGE_ENV') or 'dev')
+print(os.getenv('ENVIRONMENT'))
+app = create_app(os.getenv('ENVIRONMENT') or 'dev')
 app.register_blueprint(blueprint)
 app.app_context().push()
 
