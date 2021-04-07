@@ -2,13 +2,12 @@ from flask import request
 from flask_restplus import Resource
 from ..util.dto import UserDto
 from ..service.user_service import (
-    save_new_user,
-    update_user,
-    delete_user,
+    create_new_user,
     get_all_users,
-    get_a_user_by_username,
-    get_a_users_stats,
+    get_user,
+    get_stats_by_user,
 )
+from ..service import update, delete
 
 api = UserDto.api
 _user = UserDto.user
@@ -30,7 +29,7 @@ class UserList(Resource):
     def post(self):
         """Creates a new User """
         data = request.json
-        save_new_user(data=data)
+        create_new_user(data=data)
 
 
 @api.route('/<username>/')
@@ -41,7 +40,7 @@ class User(Resource):
     @api.marshal_with(_user)
     def get(self, username):
         """Get a User by their username"""
-        user = get_a_user_by_username(username)
+        user = get_user(username)
         if not user:
             api.abort(404)
         else:
@@ -52,22 +51,22 @@ class User(Resource):
     @api.expect(_user, validate=True)
     def put(self, username):
         """Updates a User """
-        user = get_a_user_by_username(username)
+        user = get_user(username)
         if not user:
             api.abort(404)
         else:
             data = request.json
-            return update_user(user, data)
+            return update(user, data)
 
     @api.response(200, 'User successfully deleted.')
     @api.doc('delete a user')
     def delete(self, username):
         """ Delete a User """
-        user = get_a_user_by_username(username)
+        user = get_user(username)
         if not user:
             api.abort(404)
         else:
-            return delete_user(user)
+            return delete(user)
 
 
 # found on SO, "trailing slash -> there might be more after this, no slash -> this is the final endpoint"
@@ -81,7 +80,7 @@ class UserStats(Resource):
     @api.marshal_list_with(_stat)
     def get(self, username):
         """Get a User's stats"""
-        user = get_a_user_by_username(username)
+        user = get_user(username)
         if not user:
             api.abort(404)
         else:
@@ -89,4 +88,4 @@ class UserStats(Resource):
             errors = stats_schema.validate(request.args)
             if errors:
                 api.abort(400, error="Start/end datetime param improperly formatted")
-            return get_a_users_stats(user, request.args.get('start'), request.args.get('end'))
+            return get_stats_by_user(user, request.args.get('start'), request.args.get('end'))

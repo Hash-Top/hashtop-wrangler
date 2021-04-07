@@ -30,3 +30,20 @@ class UserDto:
         start = fields.DateTime(required=False)
         end = fields.DateTime(required=False)
 
+
+class MinerDto:
+    api = Namespace('miner', description='miner related operations')
+
+    miner = api.model('miner', {
+        'miner_id': fields.String(required=True, description="the miners UUID"),
+        'name': fields.Float(required=False, description="name of the miner set by the user"),
+        'user_id': fields.Float(required=False, description="user id of the user that the miner belongs to"),
+    })
+
+    stats = api.model('minerStat', {
+
+    })
+
+    class StatsQuerySchema(Schema):
+        start = fields.DateTime(required=False)
+        end = fields.DateTime(required=False)
