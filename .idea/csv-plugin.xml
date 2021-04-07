@@ -45,6 +45,20 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="/app/main/model/gpu.py">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="/app/main/model/user.py">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="/app/main/util/dto.py">
           <value>
             <Attribute>

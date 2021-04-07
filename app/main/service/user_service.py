@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Response
 from app.main import db
 from app.main.model.user import User, UserStat
@@ -6,12 +7,16 @@ from sqlalchemy import exc
 
 
 def save_new_user(data):
-    user = get_a_user(data.get('wallet_addr'))
+    user = get_a_user_by_username(data.get('username'))
     if not user:
         new_user = User(
             fname=data.get('fname'),
             lname=data.get('lname'),
-            wallet_addr=data.get('wallet_addr'),
+            wallet_address=data.get('wallet_address'),
+            username=data.get('username'),
+            email=data.get('email'),
+            password=data.get('password'),
+            registered_on=datetime.utcnow(),
         )
         save_changes(new_user)
         response_object = {
@@ -48,15 +53,15 @@ def delete_user(user):
 
 
 def get_all_users():
-    return db.session.qeuery(User).all()
+    return db.session.query(User).all()
 
 
-def get_a_user(wallet_addr):
-    return db.session.query(User).filter_by(wallet_addr=wallet_addr).first()
+def get_a_user_by_username(username):
+    return db.session.query(User).filter_by(username=username).first()
 
 
 def get_a_users_stats(user, start, end):
-    query = db.session.query(UserStat).filter_by(wallet_addr=user.wallet_addr)
+    query = db.session.query(UserStat).filter_by(user=user)
     if start:
         query = query.filter(UserStat.time >= start)
     if end:
@@ -70,6 +75,5 @@ def save_changes(data):
         db.session.add(data)
         db.session.commit()
     except exc.SQLAlchemyError as e:
-        response = Response(response=e, status=500, mimetype='text/plain')
         logger.error(e)
-        return response
+        return Response(response="Operation failed, check logs", status=500, mimetype='text/plain')

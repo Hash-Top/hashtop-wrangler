@@ -43,7 +43,7 @@ def user(wallet_addr = None):
     if request.method == 'POST':
         new_user = User(fname=request.args.get('fname'),
                         lname=request.args.get('lname'),
-                        wallet_addr=request.args.get('wallet_addr'),
+                        wallet_addr=request.args.get('wallet_address'),
                         )
         db.session.add(new_user)
         try:
@@ -56,7 +56,7 @@ def user(wallet_addr = None):
 
     # update a users info but not their stats (name, etc)
     elif request.method == 'PUT':
-        address = request.args.get('wallet_addr')
+        address = request.args.get('wallet_address')
         if address:
             update_user = db.session.query(User).filter_by(wallet_addr=address)
             update_user.update(request.args)
@@ -93,7 +93,7 @@ def user(wallet_addr = None):
 def miner_stats(miner_id=None):
     # insert a new miner into the db
     if request.method == 'POST':
-        address = request.args.get('wallet_addr')
+        address = request.args.get('wallet_address')
         user = db.session.query(User).filter_by(wallet_addr=address).first()
         new_miner = Miner(wallet_addr=address,
                           user=user)

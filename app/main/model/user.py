@@ -1,8 +1,10 @@
 import re
+import uuid
 from datetime import datetime
 from . import Base
 from .. import bcrypt
-from sqlalchemy.orm import relationship, validates
+from sqlalchemy.dialects.mssql import UNIQUEIDENTIFIER
+from sqlalchemy.orm import relationship, validates, Session
 from sqlalchemy import (
     Column,
     Integer,
@@ -16,13 +18,14 @@ from sqlalchemy import (
 class User(Base):
     __tablename__ = "user"
 
-    wallet_addr = Column(String(42), primary_key=True)
-    username = Column(String(64), index=True, unique=True)
-    email = Column(String(120), index=True)
-    password_hash = Column(String(128))
-
+    id = Column(UNIQUEIDENTIFIER, primary_key=True, default=uuid.uuid4())
+    wallet_address = Column(String(42), index=True)
     fname = Column(String(64))
     lname = Column(String(64))
+    username = Column(String(64), unique=True, nullable=False, index=True)
+    password_hash = Column(String(128))
+    email = Column(String(120), index=True)
+    registered_on = Column(DateTime)
 
     miners = relationship("Miner",
                           back_populates="user",
@@ -42,14 +45,14 @@ class User(Base):
 
     @validates('username')
     def validate_username(self, key, username):
+        session = Session.object_session(self)
         if not username:
             raise AssertionError('No username provided')
-        if User.query.filter(User.username == username).first():
-            raise AssertionError('Username is already in use')
         if len(username) < 5 or len(username) > 20:
             raise AssertionError('Username must be between 5 and 20 characters')
-        return username @ validates('email')
+        return username
 
+    @validates('email')
     def validate_email(self, key, email):
         if not email:
             raise AssertionError('No email provided')
@@ -72,11 +75,11 @@ class User(Base):
 class UserStat(Base):
     __tablename__ = "userStat"
 
-    time = Column(DateTime, default=datetime.now(), primary_key=True)
-    wallet_addr = Column(String(42),
-                         ForeignKey("user.wallet_addr",
-                                    ondelete="CASCADE"),
-                         primary_key=True)
+    time = Column(DateTime, default=datetime.utcnow(), primary_key=True)
+    user_id = Column(UNIQUEIDENTIFIER,
+                     ForeignKey("user.id",
+                                ondelete="CASCADE"),
+                     primary_key=True)
     user = relationship("User", back_populates="stats")
 
     balance = Column(Float)

@@ -7,8 +7,8 @@ from flask_script import Manager
 from app import blueprint
 from app.main import create_app, db
 from app.main.model import user, miner, gpu
-
-app = create_app(os.getenv('STAGE_ENV') or 'dev')
+print(os.getenv('ENVIRONMENT'))
+app = create_app(os.getenv('ENVIRONMENT') or 'dev')
 app.register_blueprint(blueprint)
 app.app_context().push()
 
@@ -32,6 +32,20 @@ def test():
     if result.wasSuccessful():
         return 0
     return 1
+
+
+@manager.command
+def drop_all():
+    from app.main.model import Base
+    from dotenv import load_dotenv
+    import urllib
+    from sqlalchemy import create_engine
+    load_dotenv()
+    AZURE_CONNECT_STRING = os.getenv("AZURE_CONNECT_STRING")
+    params = urllib.parse.quote(AZURE_CONNECT_STRING)
+    conn_str = 'mssql+pyodbc:///?odbc_connect={}'.format(params)
+    engine = create_engine(conn_str, echo=True)
+    Base.metadata.drop_all(engine)
 
 
 if __name__ == '__main__':
