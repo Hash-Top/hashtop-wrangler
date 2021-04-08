@@ -80,6 +80,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="/app/test/test_auth.py">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="/hashtop_models-old.py">
           <value>
             <Attribute>

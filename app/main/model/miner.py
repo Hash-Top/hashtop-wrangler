@@ -23,8 +23,7 @@ class Miner(Base):
     name = Column(String(64))
     user_id = Column(UNIQUEIDENTIFIER,
                      ForeignKey("user.id",
-                                ondelete="CASCADE"),
-                     primary_key=True)
+                                ondelete="CASCADE"))
     user = relationship("User", back_populates="miners")
 
     gpus = relationship("Gpu",
@@ -34,8 +33,8 @@ class Miner(Base):
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
-        def update(self, **kwargs):
-            for key, value in kwargs.items():
-                if hasattr(self, key):
-                    setattr(self, key, value)
+    def update(self, **kwargs):
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
 
