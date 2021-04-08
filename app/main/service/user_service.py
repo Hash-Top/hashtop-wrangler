@@ -5,7 +5,7 @@ from . import save_changes
 
 
 def create_new_user(data):
-    user = db.session.query(User).filter_by(email=data.get('email'))
+    user = db.session.query(User).filter_by(email=data.get('email')).first()
     if not user:
         new_user = User(
             fname=data.get('fname'),
@@ -17,11 +17,8 @@ def create_new_user(data):
             registered_on=datetime.utcnow(),
         )
         save_changes(new_user)
-        response_object = {
-            'status': 'success',
-            'message': 'Successfully registered.'
-        }
-        return response_object, 201
+        registration_auth = generate_token(new_user)
+        return registration_auth
     else:
         response_object = {
             'status': 'fail',
@@ -51,3 +48,20 @@ def get_stats_by_user(user, start, end):
 
     return query.all()
 
+
+def generate_token(user):
+    try:
+        # generate the auth token
+        auth_token = user.encode_auth_token(user.id)
+        response_object = {
+            'status': 'success',
+            'message': 'Successfully registered.',
+            'Authorization': auth_token
+        }
+        return response_object, 201
+    except Exception as e:
+        response_object = {
+            'status': 'fail',
+            'message': e
+        }
+        return response_object, 401

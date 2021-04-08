@@ -19,7 +19,7 @@ conn_str = (
 
 class Config:
     JSON_SORT_KEYS = False
-    JWT_SECRET_KEY = os.getenv("JWT_SECRET")
+    SECRET_KEY = os.getenv("JWT_SECRET")
     DEBUG = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = 'mssql+pyodbc:///?odbc_connect=' + urllib.parse.quote(os.getenv('AZURE_CONNECT_STRING'))
@@ -63,4 +63,4 @@ config_by_name = dict(
     prod=ProductionConfig
 )
 
-key = Config.JWT_SECRET_KEY
+key = Config.SECRET_KEY

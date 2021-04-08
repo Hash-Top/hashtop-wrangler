@@ -8,19 +8,23 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKeyConstraint,
+    UniqueConstraint,
 )
 from . import Base
 
 
 class Gpu(Base):
     __tablename__ = "gpu"
+    __table_args__ = (
+        UniqueConstraint("miner_id", "gpu_no"),
+    )
 
+    gpu_no = Column(Integer, primary_key=True)
     miner_id = Column(UNIQUEIDENTIFIER,
                       ForeignKey("miner.id",
                                  ondelete="CASCADE"),
                       primary_key=True)
     miner = relationship("Miner", back_populates="gpus")
-    gpu_no = Column(Integer, primary_key=True)
 
     healths = relationship("Health",
                            cascade="all, delete-orphan")
@@ -38,11 +42,11 @@ class Health(Base):
         ),
     )
 
+    time = Column(DateTime, default=datetime.now(), primary_key=True)
+
     # don't need backpopulates because we only ever insert into this table
     miner_id = Column(UNIQUEIDENTIFIER, primary_key=True)
     gpu_no = Column(Integer, primary_key=True)
-
-    time = Column(DateTime, default=datetime.now(), primary_key=True)
 
     temperature = Column(Integer)
     power = Column(Integer)

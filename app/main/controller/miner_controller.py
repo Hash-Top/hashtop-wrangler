@@ -11,6 +11,7 @@ from ..service.miner_service import (
     get_stats_by_miner,
 )
 from ..service import update, delete
+from ..util.decorators import token_required, admin_token_required
 
 api = MinerDto.api
 _miner = MinerDto.miner
@@ -22,14 +23,16 @@ stats_schema = MinerDto.StatsQuerySchema()
 class MinerList(Resource):
     @api.doc('list_of_miners_owned_by_this_user')
     @api.marshal_list_with(_miner, envelope='data')
+    @token_required
     def get(self, username):
         """List all miners owned by this user"""
         user = get_user(username=username)
         return get_all_miners(user)
 
     @api.response(201, 'Miner successfully created.')
-    @api.doc('create a new user')
+    @api.doc('create a new miner')
     @api.expect(_miner, validate=True)
+    @token_required
     def post(self):
         """Creates a new Miner """
         data = request.json
@@ -46,6 +49,7 @@ class MinerStats(Resource):
     @api.param('end', "Optional time after which to retrieve stats")
     @api.param('start', "Optional time before which to retrieve stats")
     @api.marshal_with(_minerStats)
+    @token_required
     def get(self, username, miner_id):
         """ Get a miner's stats """
         user = get_user(username)
@@ -63,6 +67,7 @@ class MinerStats(Resource):
     @api.response(200, 'Miner successfully updated.')
     @api.doc('update a miners information')
     @api.expect(_miner, validate=True)
+    @token_required
     def put(self, username, miner_id):
         """Updates a User's miner """
         user = get_user(username, miner_id)
@@ -75,6 +80,7 @@ class MinerStats(Resource):
 
     @api.response(200, 'Miner successfully deleted.')
     @api.doc("delete a user's miner")
+    @token_required
     def delete(self, username, miner_id):
         """ Delete a user's miner """
         miner = get_miner(miner_id)

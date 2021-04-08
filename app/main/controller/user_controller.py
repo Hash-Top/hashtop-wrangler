@@ -8,6 +8,7 @@ from ..service.user_service import (
     get_stats_by_user,
 )
 from ..service import update, delete
+from ..util.decorators import token_required, admin_token_required
 
 api = UserDto.api
 _user = UserDto.user
@@ -29,7 +30,7 @@ class UserList(Resource):
     def post(self):
         """Creates a new User """
         data = request.json
-        create_new_user(data=data)
+        return create_new_user(data=data)
 
 
 @api.route('/<username>/')
@@ -49,6 +50,7 @@ class User(Resource):
     @api.response(200, 'User successfully updated.')
     @api.doc('update a users information')
     @api.expect(_user, validate=True)
+    @token_required
     def put(self, username):
         """Updates a User """
         user = get_user(username)
@@ -60,6 +62,7 @@ class User(Resource):
 
     @api.response(200, 'User successfully deleted.')
     @api.doc('delete a user')
+    @token_required
     def delete(self, username):
         """ Delete a User """
         user = get_user(username)

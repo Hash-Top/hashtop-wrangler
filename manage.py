@@ -5,10 +5,9 @@ from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
 
 from app import blueprint
-from app.main import create_app, db
+from app.main import create_app, db, config
 from app.main.model import user, miner, gpu
-print(os.getenv('ENVIRONMENT'))
-app = create_app(os.getenv('ENVIRONMENT') or 'dev')
+app = create_app()
 app.register_blueprint(blueprint)
 app.app_context().push()
 
@@ -38,14 +37,20 @@ def test():
 def drop_all():
     from app.main.model import Base
     from dotenv import load_dotenv
-    import urllib
     from sqlalchemy import create_engine
     load_dotenv()
-    AZURE_CONNECT_STRING = os.getenv("AZURE_CONNECT_STRING")
-    params = urllib.parse.quote(AZURE_CONNECT_STRING)
-    conn_str = 'mssql+pyodbc:///?odbc_connect={}'.format(params)
-    engine = create_engine(conn_str, echo=True)
+    engine = create_engine(config.SQLALCHEMY_DATABASE_URI, echo=True)
     Base.metadata.drop_all(engine)
+
+
+@manager.command
+def create_all():
+    from app.main.model import Base
+    from dotenv import load_dotenv
+    from sqlalchemy import create_engine
+    load_dotenv()
+    engine = create_engine(config.SQLALCHEMY_DATABASE_URI, echo=True)
+    Base.metadata.create_all(engine)
 
 
 if __name__ == '__main__':
