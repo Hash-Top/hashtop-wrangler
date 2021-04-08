@@ -4,7 +4,7 @@ from datetime import datetime
 from . import Base
 from .. import bcrypt
 from sqlalchemy.dialects.mssql import UNIQUEIDENTIFIER
-from sqlalchemy.orm import relationship, validates, Session
+from sqlalchemy.orm import relationship, validates
 from sqlalchemy import (
     Column,
     Integer,
@@ -45,7 +45,6 @@ class User(Base):
 
     @validates('username')
     def validate_username(self, key, username):
-        session = Session.object_session(self)
         if not username:
             raise AssertionError('No username provided')
         if len(username) < 5 or len(username) > 20:
