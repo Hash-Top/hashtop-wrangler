@@ -20,6 +20,7 @@ else:
 from .model import Base
 db = SQLAlchemy(metadata=Base.metadata)
 
+
 def create_app():
     app = Flask(__name__)
     app.config.from_object(config_env)
