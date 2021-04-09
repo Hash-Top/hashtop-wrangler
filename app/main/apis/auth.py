@@ -5,7 +5,7 @@ from app.main.service.auth_helper import Auth
 from ..util.dto import AuthDto
 from ..util.decorators import token_required
 
-api = AuthDto.api
+api = AuthDto.namespace
 user_auth = AuthDto.user_auth
 
 
