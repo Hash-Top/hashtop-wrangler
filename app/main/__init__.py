@@ -20,10 +20,10 @@ else:
 from .model import Base
 db = SQLAlchemy(metadata=Base.metadata)
 
-def create_app():
+def create_app() -> Flask:
     app = Flask(__name__)
     app.config.from_object(config_env)
     db.init_app(app)
     bcrypt.init_app(app)
-
+    print("create app")
     return app

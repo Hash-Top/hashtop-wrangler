@@ -5,7 +5,7 @@ from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
 
 from app import blueprint
-from app.main import create_app, db, config
+from app.main import create_app, db, config_env
 from app.main.model import user, miner, gpu
 app = create_app()
 app.register_blueprint(blueprint)
@@ -43,7 +43,7 @@ def drop_all():
     from dotenv import load_dotenv
     from sqlalchemy import create_engine
     load_dotenv()
-    engine = create_engine(config.SQLALCHEMY_DATABASE_URI, echo=True)
+    engine = create_engine(config_env.SQLALCHEMY_DATABASE_URI, echo=True)
     Base.metadata.drop_all(engine)
 
 
@@ -53,9 +53,12 @@ def create_all():
     from dotenv import load_dotenv
     from sqlalchemy import create_engine
     load_dotenv()
-    engine = create_engine(config.SQLALCHEMY_DATABASE_URI, echo=True)
+    engine = create_engine(config_env.SQLALCHEMY_DATABASE_URI, echo=True)
     Base.metadata.create_all(engine)
 
 
 if __name__ == '__main__':
+    print("manage run")
+
     manager.run()
+
