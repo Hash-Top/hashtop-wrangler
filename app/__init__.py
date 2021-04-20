@@ -8,7 +8,6 @@ from flask import Blueprint
 from .main.apis.user import api as user_ns
 from .main.apis.miner import api as miner_ns
 from .main.apis.auth import api as auth_ns
-from .main.apis.root import api as root_ns
 
 
 blueprint = Blueprint('api', __name__)#, url_prefix='/api')
