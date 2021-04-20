@@ -17,10 +17,14 @@ migrate = Migrate(app, db)
 
 manager.add_command('db', MigrateCommand)
 
+#TODO: there  is no way in hell that this is SOP
+def get_app():
+    return app
+
 
 @manager.command
 def run():
-    app.run(threaded=True, port=5000)
+    app.run(threaded=True, port=5001)
 
 
 @manager.command

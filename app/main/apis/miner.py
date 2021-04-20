@@ -13,7 +13,7 @@ from ..service.miner_service import (
 from ..service import update, delete
 from ..util.decorators import token_required, admin_token_required
 
-api = MinerDto.api
+api = MinerDto.namespace
 _miner = MinerDto.miner
 _minerStats = MinerDto.stats
 stats_schema = MinerDto.StatsQuerySchema()

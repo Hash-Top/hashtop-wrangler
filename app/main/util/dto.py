@@ -3,8 +3,8 @@ from marshmallow import Schema
 
 
 class UserDto:
-    api = Namespace('user', description='user related operations')
-    user = api.model('user', {
+    namespace = Namespace('user', description='user related operations')
+    user = namespace.model('user', {
         'username': fields.String(required=True, description='username'),
         'password': fields.String(required=True, description='password'),
         'wallet_address': fields.String(description='wallet address'),
@@ -13,7 +13,7 @@ class UserDto:
         'email': fields.String(required=True, description='email address'),
     })
 
-    stat = api.model('userStat', {
+    stat = namespace.model('userStat', {
         'time': fields.DateTime(required=True, description="time that the stats were queried"),
         'user_id': fields.String(required=True, description="which user the stats are for"),
         'balance': fields.Float(required=False, description="total balance in wei"),
@@ -32,15 +32,15 @@ class UserDto:
 
 
 class MinerDto:
-    api = Namespace('miner', description='miner related operations')
+    namespace = Namespace('miner', description='miner related operations')
 
-    miner = api.model('miner', {
+    miner = namespace.model('miner', {
         'miner_id': fields.String(required=True, description="the miners UUID"),
         'name': fields.Float(required=False, description="name of the miner set by the user"),
         'user_id': fields.Float(required=False, description="user id of the user that the miner belongs to"),
     })
 
-    stats = api.model('minerStat', {
+    stats = namespace.model('minerStat', {
 
     })
 
@@ -50,8 +50,8 @@ class MinerDto:
 
 
 class AuthDto:
-    api = Namespace('auth', description='authentication related operations')
-    user_auth = api.model('auth_details', {
+    namespace = Namespace('auth', description='authentication related operations')
+    user_auth = namespace.model('auth_details', {
         'username': fields.String(required=True, description='The user name'),
         'password': fields.String(required=True, description='The user password '),
     })
