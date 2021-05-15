@@ -11,7 +11,7 @@ from ..service.miner_service import (
     get_stats_by_miner,
 )
 from ..service import update, delete
-from ..util.decorators import token_required, admin_token_required
+from ..util.decorators import token_required
 
 api = MinerDto.namespace
 _miner = MinerDto.miner

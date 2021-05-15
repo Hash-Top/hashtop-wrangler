@@ -8,7 +8,7 @@ from ..service.user_service import (
     get_stats_by_user,
 )
 from ..service import update, delete
-from ..util.decorators import token_required, admin_token_required
+from ..util.decorators import token_required
 
 api = UserDto.namespace
 _user = UserDto.user
@@ -27,7 +27,6 @@ class UserList(Resource):
     @api.response(201, 'User successfully created.')
     @api.doc('create a new user')
     @api.expect(_user, validate=True)
-    @admin_token_required
     def post(self):
         """Creates a new User """
         data = request.json

@@ -24,6 +24,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="/app/main/apis/user.py">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="/app/main/config.py">
           <value>
             <Attribute>
