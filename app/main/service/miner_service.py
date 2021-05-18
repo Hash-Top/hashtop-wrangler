@@ -39,7 +39,7 @@ def get_all_miners(user):
 
 
 def get_miner(miner_id):
-    return db.session.query(Miner).filter_by(id=miner_id)
+    return db.session.query(Miner).filter_by(id=miner_id).first()
 
 
 #TODO: don't know if we need this as the dashboard will have access to the miners id

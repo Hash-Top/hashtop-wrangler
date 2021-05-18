@@ -80,6 +80,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="/app/main/service/socket_service.py">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="/app/main/service/user_service.py">
           <value>
             <Attribute>
@@ -95,6 +102,20 @@
           </value>
         </entry>
         <entry key="/app/test/test_auth.py">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="/app/test/test_share_socket.py">
+          <value>
+            <Attribute>
+              <option name="separator" value=":" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="/app/test/test_user_model.py">
           <value>
             <Attribute>
               <option name="separator" value="," />
