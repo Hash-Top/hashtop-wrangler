@@ -14,6 +14,7 @@ def update_shares(miner_uuid, data):
     if miner:
         gpu_no = data.get('gpu_no')
         share_type = data.get('share_type')
+        ts = int(data.get('timestamp'))
         gpu = get_gpu(miner, gpu_no)
         if gpu:
             # create a new share object in the db from the websocket payload
@@ -21,7 +22,7 @@ def update_shares(miner_uuid, data):
                 miner_id=miner_uuid,
                 gpu_no=gpu_no,
                 type=ShareType[share_type],
-                time=datetime.strptime(data.get('time'), "%H:%M:%S")
+                time=datetime.fromtimestamp(ts)
             )
             save_changes(new_share)
             response_object = {
