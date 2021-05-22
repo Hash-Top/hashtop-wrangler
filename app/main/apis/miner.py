@@ -34,11 +34,13 @@ class MinerList(Resource):
     @api.response(201, 'Miner successfully created.')
     @api.doc('create a new miner')
     @api.expect(_miner, validate=True)
-    @token_required
-    def post(self):
+    #TODO: remove before full prod deploy
+    #@token_required
+    def post(self, username):
         """Creates a new Miner """
         data = request.json
-        create_new_miner(data=data)
+        user = get_user(username=username)
+        return create_new_miner(data, user)
 
 
 @api.route('/<username>/<miner_id>')
