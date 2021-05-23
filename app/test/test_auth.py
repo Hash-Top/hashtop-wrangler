@@ -34,14 +34,14 @@ class TestAuthBlueprint(BaseTestCase):
                 # register the user
                 registration_response = register_user(self)
                 reg_json = registration_response.json
-                self.assertTrue(reg_json['Authorization'])
                 self.assertEqual(registration_response.status_code, 201)
+                self.assertTrue(reg_json['Authorization'])
 
                 # registered user login
                 login_response = login_user(self)
                 login_json = login_response.json
-                self.assertTrue(login_json['Authorization'])
                 self.assertEqual(login_response.status_code, 200)
+                self.assertTrue(login_json['Authorization'])
 
     def test_valid_logout(self):
         """ Test for logout before token expires """

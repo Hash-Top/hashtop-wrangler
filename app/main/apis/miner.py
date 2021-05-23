@@ -1,6 +1,7 @@
 from flask import request
 from flask_restplus import Resource
 
+from .. import socketio
 from ..service.user_service import get_stats_by_user
 from ..util.dto import MinerDto
 from ..service.miner_service import (
@@ -11,7 +12,8 @@ from ..service.miner_service import (
     get_stats_by_miner,
 )
 from ..service import update, delete
-from ..util.decorators import token_required, admin_token_required
+from ..util.decorators import token_required
+from flask_socketio import SocketIO, emit
 
 api = MinerDto.namespace
 _miner = MinerDto.miner
@@ -32,11 +34,13 @@ class MinerList(Resource):
     @api.response(201, 'Miner successfully created.')
     @api.doc('create a new miner')
     @api.expect(_miner, validate=True)
-    @token_required
-    def post(self):
+    #TODO: remove before full prod deploy
+    #@token_required
+    def post(self, username):
         """Creates a new Miner """
         data = request.json
-        create_new_miner(data=data)
+        user = get_user(username=username)
+        return create_new_miner(data, user)
 
 
 @api.route('/<username>/<miner_id>')
@@ -77,6 +81,7 @@ class MinerStats(Resource):
         else:
             data = request.json
             return update(miner, data)
+
 
     @api.response(200, 'Miner successfully deleted.')
     @api.doc("delete a user's miner")

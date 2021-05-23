@@ -10,22 +10,23 @@ from sqlalchemy import exc
 from ..model import Gpu, Health
 
 
-def create_new_miner(data):
-    user = get_user(data.get('user_id'))
+def create_new_miner(data, user):
     miner = db.session.query(Miner).filter_by(name=data.get('miner_name'),
-                                              user=user)
-
+                                              user=user).first()
     if not miner:
         new_miner = Miner(
             name=data.get('miner_name'),
-            user_id=data.get('user_id'),
+            user_id=user.id,
         )
-        save_changes(new_miner)
-        response_object = {
-            'status': 'success',
-            'message': 'Successfully added new miner.'
-        }
-        return response_object, 201
+        save_error = save_changes(new_miner)
+        if save_error:
+            return save_error
+        else:
+            response_object = {
+                'status': 'success',
+                'message': 'Successfully added new miner.'
+            }
+            return response_object, 201
     else:
         response_object = {
             'status': 'fail',
@@ -39,10 +40,10 @@ def get_all_miners(user):
 
 
 def get_miner(miner_id):
-    return db.session.query(Miner).filter_by(id=miner_id)
+    return db.session.query(Miner).filter_by(id=miner_id).first()
 
 
-#TODO: don't know if we need this as the dashboard will have access to the miners id
+# TODO: don't know if we need this as the dashboard will have access to the miners id
 # when displayed in a list
 def get_miner_by_name(user, miner_name):
     return db.session(Miner).filter_by(user=user, name=miner_name)
@@ -50,8 +51,8 @@ def get_miner_by_name(user, miner_name):
 
 def get_stats_by_miner(miner, start, end):
     # get all health stats for all gpus in the miner
-    gpu_health_stats = db.session.query(Health)\
-        .join(Health.gpu)\
+    gpu_health_stats = db.session.query(Health) \
+        .join(Health.gpu) \
         .filter(Health.gpu.miner == miner)
 
     if start:
