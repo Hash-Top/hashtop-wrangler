@@ -2,7 +2,7 @@ from datetime import datetime
 
 from app.main import db
 from app.main.model.miner import Miner
-from app.main.model.gpu import Share, ShareType
+from app.main.model.share import Share, ShareType
 from .miner_service import get_miner
 from . import logger, update, delete, save_changes
 from ..model import Gpu, Health

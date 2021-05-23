@@ -24,6 +24,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="/app/main/apis/miner.py">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="/app/main/apis/socket.py">
           <value>
             <Attribute>

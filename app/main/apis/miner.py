@@ -17,7 +17,7 @@ from flask_socketio import SocketIO, emit
 
 api = MinerDto.namespace
 _miner = MinerDto.miner
-_minerStats = MinerDto.stats
+_minerStats = MinerDto.stat
 stats_schema = MinerDto.StatsQuerySchema()
 
 
@@ -49,10 +49,11 @@ class MinerList(Resource):
 @api.response(404, 'No User/Miner with that id.')
 class MinerStats(Resource):
     @api.doc('get a miners stats')
-    @api.doc(body="Not specifying start or end will return the past 7 days of stats")
+    #@api.doc(body="Not specifying start or end will return the past 7 days of stats")
+    # TODO: add default limits ^
     @api.param('end', "Optional time after which to retrieve stats")
     @api.param('start', "Optional time before which to retrieve stats")
-    @api.marshal_with(_minerStats)
+    @api.marshal_list_with(_minerStats)
     @token_required
     def get(self, username, miner_id):
         """ Get a miner's stats """

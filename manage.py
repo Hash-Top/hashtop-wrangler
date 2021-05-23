@@ -6,7 +6,7 @@ from flask_script import Manager
 
 from app import blueprint
 from app.main import create_app, db, config_env, socketio
-from app.main.apis import socket
+from app.main.apis import miner_socket
 from app.main.model import user, miner, gpu
 
 app = create_app()
