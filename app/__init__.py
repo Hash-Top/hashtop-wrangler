@@ -8,7 +8,7 @@ from flask import Blueprint
 from .main.apis.user import api as user_ns
 from .main.apis.miner import api as miner_ns
 from .main.apis.auth import api as auth_ns
-from .main.apis import socket
+from .main.apis import miner_socket
 
 
 blueprint = Blueprint('api', __name__)#, url_prefix='/api')

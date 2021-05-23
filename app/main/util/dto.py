@@ -1,6 +1,6 @@
 from flask_restplus import Namespace, fields
 from marshmallow import Schema
-
+from ..model.share import ShareType
 
 class UserDto:
     namespace = Namespace('user', description='user related operations')
@@ -40,8 +40,10 @@ class MinerDto:
         'user_id': fields.String(required=False, description="user id of the user that the miner belongs to"),
     })
 
-    stats = namespace.model('minerStat', {
-
+    stat = namespace.model('minerStat', {
+        'share_type': fields.String(enum=[enum.name for enum in ShareType], description="the miners UUID"),
+        'gpu_no': fields.Integer(required=True, description="the gpu that the share was generated on"),
+        'time': fields.DateTime(required=True, description="the time at which the share was generated")
     })
 
     class StatsQuerySchema(Schema):

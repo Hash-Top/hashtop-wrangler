@@ -1,10 +1,10 @@
+import datetime
 from datetime import timedelta
 from sqlalchemy import exc
 from sqlalchemy.orm import Session
 from timeloop import Timeloop
-
+import os
 from app.main.model import UserStat, User
-from models import *
 import requests
 import logging
 
