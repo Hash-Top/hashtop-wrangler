@@ -40,10 +40,20 @@ class MinerDto:
         'user_id': fields.String(required=False, description="user id of the user that the miner belongs to"),
     })
 
-    stat = namespace.model('minerStat', {
-        'share_type': fields.String(enum=[enum.name for enum in ShareType], description="the miners UUID"),
+    share = namespace.model('share', {
+        'miner_id': fields.String(required=False, description="the miners UUID"),
         'gpu_no': fields.Integer(required=True, description="the gpu that the share was generated on"),
-        'time': fields.DateTime(required=True, description="the time at which the share was generated")
+        'time': fields.DateTime(required=True, description="the time at which the share was generated"),
+        'type': fields.String(enum=[enum.name for enum in ShareType], description="invalid, valid or stale"),
+    })
+
+    health = namespace.model('health', {
+        'miner_id': fields.String(required=False, description="the miners UUID"),
+        'gpu_no': fields.Integer(required=True, description="the gpu that the share was generated on"),
+        'time': fields.DateTime(required=True, description="the time at which the share was generated"),
+        'temperature': fields.Integer(required=False, description="the gpus temperature in C"),
+        'power': fields.Integer(required=False, description="the gpus power usage in watts"),
+        'hashrate': fields.Float(required=False, description="the gpus hashrate in megahash"),
     })
 
     class StatsQuerySchema(Schema):

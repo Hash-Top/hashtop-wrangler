@@ -35,6 +35,7 @@ def get_user(username):
     return db.session.query(User).filter_by(username=username).first()
 
 
+# probably use this once login is fully implemented
 #def get_user(user_id):
 #    return db.session.query(User).filter_by(id=user_id).first()
 

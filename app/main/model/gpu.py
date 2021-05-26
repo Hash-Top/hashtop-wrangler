@@ -29,6 +29,8 @@ class Gpu(Base):
     healths = relationship("Health",
                            cascade="all, delete-orphan")
 
+    shares = relationship("Share",
+                           cascade="all, delete-orphan")
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
