@@ -5,17 +5,19 @@ werkzeug.cached_property = werkzeug.utils.cached_property
 from flask_restplus import Api
 from flask import Blueprint
 
-from .main.controller.user_controller import api as user_ns
-from .main.controller.miner_controller import api as miner_ns
-from .main.controller.auth_controller import api as auth_ns
+from .main.apis.user import api as user_ns
+from .main.apis.miner import api as miner_ns
+from .main.apis.auth import api as auth_ns
+from .main.apis import miner_socket
 
 
-blueprint = Blueprint('api', __name__)
+blueprint = Blueprint('api', __name__)#, url_prefix='/api')
 
 api = Api(blueprint,
           title='HashTop Wrangler',
           version='1.0',
-          description='API for fully managed cryptomining'
+          description='API for fully managed cryptomining',
+          #doc='/doc/'
           )
 
 api.add_namespace(user_ns, path='/user')

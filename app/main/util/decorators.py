@@ -26,6 +26,8 @@ def admin_token_required(f):
         data, status = Auth.get_logged_in_user(request)
         token = data.get('data')
 
+        # get logged in user returns object, status code
+        # if there is no token, we know that a user isn't logged in
         if not token:
             return data, status
 

@@ -2,6 +2,7 @@ from datetime import datetime
 from app.main import db
 from app.main.model.user import User, UserStat
 from . import save_changes
+import uuid
 
 
 def create_new_user(data):
@@ -31,12 +32,13 @@ def get_all_users():
     return db.session.query(User).all()
 
 
-def get_user(username):
+def get_user_by_username(username):
     return db.session.query(User).filter_by(username=username).first()
 
 
-#def get_user(user_id):
-#    return db.session.query(User).filter_by(id=user_id).first()
+# probably use this once login is fully implemented
+def get_user_by_id(user_id):
+    return db.session.query(User).filter_by(id=uuid.UUID(user_id)).first()
 
 
 def get_stats_by_user(user, start, end):

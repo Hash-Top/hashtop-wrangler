@@ -1,10 +1,11 @@
 from flask_restplus import Namespace, fields
 from marshmallow import Schema
-
+from ..model.share import ShareType
 
 class UserDto:
-    api = Namespace('user', description='user related operations')
-    user = api.model('user', {
+    namespace = Namespace('user', description='user related operations')
+    user = namespace.model('user', {
+        'id': fields.String(description='users UUID'),
         'username': fields.String(required=True, description='username'),
         'password': fields.String(required=True, description='password'),
         'wallet_address': fields.String(description='wallet address'),
@@ -13,7 +14,7 @@ class UserDto:
         'email': fields.String(required=True, description='email address'),
     })
 
-    stat = api.model('userStat', {
+    stat = namespace.model('userStat', {
         'time': fields.DateTime(required=True, description="time that the stats were queried"),
         'user_id': fields.String(required=True, description="which user the stats are for"),
         'balance': fields.Float(required=False, description="total balance in wei"),
@@ -32,16 +33,28 @@ class UserDto:
 
 
 class MinerDto:
-    api = Namespace('miner', description='miner related operations')
+    namespace = Namespace('miner', description='miner related operations')
 
-    miner = api.model('miner', {
-        'miner_id': fields.String(required=True, description="the miners UUID"),
-        'name': fields.Float(required=False, description="name of the miner set by the user"),
-        'user_id': fields.Float(required=False, description="user id of the user that the miner belongs to"),
+    miner = namespace.model('miner', {
+        'id': fields.String(required=False, description="the miners UUID"),
+        'name': fields.String(required=False, description="name of the miner set by the user"),
+        'user_id': fields.String(required=False, description="user id of the user that the miner belongs to"),
     })
 
-    stats = api.model('minerStat', {
+    share = namespace.model('share', {
+        'miner_id': fields.String(required=False, description="the miners UUID"),
+        'gpu_no': fields.Integer(required=True, description="the gpu that the share was generated on"),
+        'time': fields.DateTime(required=True, description="the time at which the share was generated"),
+        'type': fields.String(enum=[enum.name for enum in ShareType], description="invalid, valid or stale"),
+    })
 
+    health = namespace.model('health', {
+        'miner_id': fields.String(required=False, description="the miners UUID"),
+        'gpu_no': fields.Integer(required=True, description="the gpu that the share was generated on"),
+        'time': fields.DateTime(required=True, description="the time at which the share was generated"),
+        'temperature': fields.Integer(required=False, description="the gpus temperature in C"),
+        'power': fields.Integer(required=False, description="the gpus power usage in watts"),
+        'hashrate': fields.Float(required=False, description="the gpus hashrate in megahash"),
     })
 
     class StatsQuerySchema(Schema):
@@ -50,8 +63,8 @@ class MinerDto:
 
 
 class AuthDto:
-    api = Namespace('auth', description='authentication related operations')
-    user_auth = api.model('auth_details', {
+    namespace = Namespace('auth', description='authentication related operations')
+    user_auth = namespace.model('auth_details', {
         'username': fields.String(required=True, description='The user name'),
         'password': fields.String(required=True, description='The user password '),
     })
