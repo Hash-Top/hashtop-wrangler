@@ -50,7 +50,7 @@ class TestingConfig(Config):
 
 
 class ProductionConfig(Config):
-    DEBUG = False
+    DEBUG = True
     conn_str = conn_str.format(os.getenv('AZURE_SERVER'),
                                os.getenv('PROD_DB_NAME'),
                                os.getenv('AZURE_UID'),

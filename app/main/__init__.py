@@ -15,7 +15,7 @@ bcrypt = Bcrypt()
 if env_name == 'DEV':
     socketio = SocketIO(logger=True, engineio_logger=True)
 else:
-    socketio = SocketIO()
+    socketio = SocketIO(logger=True, engineio_logger=True)
 
 
 if env_name == "PROD":
