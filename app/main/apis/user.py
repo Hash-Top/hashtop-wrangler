@@ -4,7 +4,7 @@ from ..util.dto import UserDto
 from ..service.user_service import (
     create_new_user,
     get_all_users,
-    get_user,
+    get_user_by_username,
     get_stats_by_user,
 )
 from ..service import update, delete
@@ -41,7 +41,7 @@ class User(Resource):
     @api.marshal_with(_user)
     def get(self, username):
         """Get a User by their username"""
-        user = get_user(username)
+        user = get_user_by_username(username)
         if not user:
             api.abort(404)
         else:
@@ -53,7 +53,7 @@ class User(Resource):
     @token_required
     def put(self, username):
         """Updates a User """
-        user = get_user(username)
+        user = get_user_by_username(username)
         if not user:
             api.abort(404)
         else:
@@ -65,7 +65,7 @@ class User(Resource):
     @token_required
     def delete(self, username):
         """ Delete a User """
-        user = get_user(username)
+        user = get_user_by_username(username)
         if not user:
             api.abort(404)
         else:
@@ -83,7 +83,7 @@ class UserStats(Resource):
     @api.marshal_list_with(_stat)
     def get(self, username):
         """Get a User's stats"""
-        user = get_user(username)
+        user = get_user_by_username(username)
         if not user:
             api.abort(404)
         else:

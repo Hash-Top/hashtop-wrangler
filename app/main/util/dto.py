@@ -5,6 +5,7 @@ from ..model.share import ShareType
 class UserDto:
     namespace = Namespace('user', description='user related operations')
     user = namespace.model('user', {
+        'id': fields.String(description='users UUID'),
         'username': fields.String(required=True, description='username'),
         'password': fields.String(required=True, description='password'),
         'wallet_address': fields.String(description='wallet address'),
@@ -35,8 +36,8 @@ class MinerDto:
     namespace = Namespace('miner', description='miner related operations')
 
     miner = namespace.model('miner', {
-        'miner_id': fields.String(required=False, description="the miners UUID"),
-        'miner_name': fields.String(required=False, description="name of the miner set by the user"),
+        'id': fields.String(required=False, description="the miners UUID"),
+        'name': fields.String(required=False, description="name of the miner set by the user"),
         'user_id': fields.String(required=False, description="user id of the user that the miner belongs to"),
     })
 
