@@ -16,4 +16,4 @@ class MinerSocket(Namespace):
         return update_shares(miner_uuid, data)
 
 
-socketio.on_namespace(MinerSocket('/miner'))
+socketio.on_namespace(MinerSocket('/'))
