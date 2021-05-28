@@ -1,6 +1,5 @@
 import os
 import urllib
-
 from dotenv import load_dotenv
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -50,7 +49,8 @@ class TestingConfig(Config):
 
 
 class ProductionConfig(Config):
-    DEBUG = False
+    DEBUG = os.getenv('DEBUG').upper() == 'TRUE'
+
     conn_str = conn_str.format(os.getenv('AZURE_SERVER'),
                                os.getenv('PROD_DB_NAME'),
                                os.getenv('AZURE_UID'),
