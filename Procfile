@@ -1,1 +1,1 @@
-web: gunicorn "manage:get_app()"
+web: gunicorn --worker-class eventlet -w 1 "manage:get_app()"
