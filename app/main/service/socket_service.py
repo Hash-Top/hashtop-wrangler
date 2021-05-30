@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 
 from app.main import db
@@ -29,20 +30,25 @@ def update_shares(miner_uuid, data):
                 'status': 'success',
                 'message': f'Successfully added new {share_type} share data for gpu {gpu_no}.'
             }
-            return response_object, 201
+            response_payload = response_object, 201
         else:
             response_object = {
                 'status': 'fail',
                 'message': f'GPU {gpu_no} doesn\'t exist in this miner.',
             }
-            return response_object, 409
+            response_payload = response_object, 409
 
     else:
         response_object = {
             'status': 'fail',
             'message': f'No miner matching the UUID {miner_uuid}.',
         }
-        return response_object, 409
+
+        response_payload =  response_object, 409
+
+    if os.getenv('DEBUG').upper() == 'TRUE':
+        print(response_payload)
+    return response_payload
 
 
 def get_gpu(miner, gpu_no):

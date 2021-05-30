@@ -1,4 +1,5 @@
 # bugfix for importing flask_restplus
+
 import werkzeug
 werkzeug.cached_property = werkzeug.utils.cached_property
 
@@ -9,6 +10,7 @@ from .main.apis.user import api as user_ns
 from .main.apis.miner import api as miner_ns
 from .main.apis.auth import api as auth_ns
 from .main.apis import miner_socket
+
 
 
 blueprint = Blueprint('api', __name__)#, url_prefix='/api')
