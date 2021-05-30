@@ -56,7 +56,12 @@ def get_healths_by_miner(miner, start, end):
     if end:
         gpu_health_stats = gpu_health_stats.filter(Gpu.healths.time <= end)
 
-    return gpu_health_stats.all()
+    stats = []
+    # more efficient than querying using .all() so python doesn't load everything at once
+    for s in gpu_health_stats.yield_per(100).limit(1000000):
+        stats.append(s)
+
+    return stats
 
 
 def get_shares_by_miner(miner, start, end):
@@ -70,8 +75,11 @@ def get_shares_by_miner(miner, start, end):
     if end:
         gpu_share_stats = gpu_share_stats.filter(Gpu.shares.time <= end)
 
-    shares = gpu_share_stats.all()
-    for s in shares:
+    shares = []
+    # more efficient than querying using .all() so python doesn't load everything at once
+    for s in gpu_share_stats.yield_per(100).limit(1000000):
         # replace the enum with its string
         s.type = s.type.name
+        shares.append(s)
+
     return shares
