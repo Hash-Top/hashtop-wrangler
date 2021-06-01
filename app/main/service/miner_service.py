@@ -1,3 +1,5 @@
+from sqlalchemy import select
+
 from app.main import db
 from . import logger, update, delete, save_changes
 
@@ -66,20 +68,27 @@ def get_healths_by_miner(miner, start, end):
 
 def get_shares_by_miner(miner, start, end):
     # get all share stats for all gpus in the miner
-    gpu_share_stats = db.session.query(Share) \
-        .join(Gpu) \
-        .filter(Gpu.miner == miner)
+    share_table = db.metadata.tables['share']
+    gpu_table = db.metadata.tables['gpu']
+    gpu_share_stats = select(share_table).select_from(
+        share_table.join(gpu_table)).where(share_table.c.miner_id == miner.id)
 
     if start:
-        gpu_share_stats = gpu_share_stats.filter(Gpu.shares.time >= start)
+        gpu_share_stats = gpu_share_stats.where(share_table.time >= start)
     if end:
-        gpu_share_stats = gpu_share_stats.filter(Gpu.shares.time <= end)
+        gpu_share_stats = gpu_share_stats.where(share_table.time <= end)
+
+    logger.debug(gpu_share_stats)
+    result = db.engine.connect().execute(gpu_share_stats)
 
     shares = []
     # more efficient than querying using .all() so python doesn't load everything at once
-    for s in gpu_share_stats.yield_per(100).limit(1000000):
+    for s in result.yield_per(100):
+        d = dict(s)
         # replace the enum with its string
-        s.type = s.type.name
-        shares.append(s)
+        d['type'] = s.type.name
+        shares.append(d)
+
+    logger.debug(result)
 
     return shares
