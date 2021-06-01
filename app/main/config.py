@@ -49,7 +49,7 @@ class TestingConfig(Config):
 
 
 class ProductionConfig(Config):
-    DEBUG = os.getenv('DEBUG').upper() == 'TRUE'
+    DEBUG = (os.getenv('DEBUG') or 'false').upper() == 'TRUE'
 
     conn_str = conn_str.format(os.getenv('AZURE_SERVER'),
                                os.getenv('PROD_DB_NAME'),

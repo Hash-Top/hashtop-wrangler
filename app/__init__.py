@@ -12,7 +12,6 @@ from .main.apis.auth import api as auth_ns
 from .main.apis import miner_socket
 
 
-
 blueprint = Blueprint('api', __name__)#, url_prefix='/api')
 
 api = Api(blueprint,

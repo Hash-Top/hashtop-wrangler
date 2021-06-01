@@ -11,7 +11,7 @@ env_name = (os.getenv('ENVIRONMENT') or 'dev').upper()
 config_env = config_by_name[env_name]
 
 bcrypt = Bcrypt()
-if env_name == 'DEV' or os.getenv('DEBUG').upper() == 'TRUE':
+if env_name == 'DEV' or (os.getenv('DEBUG') or 'false').upper() == 'TRUE':
     socketio = SocketIO(logger=True, engineio_logger=True)
 else:
     socketio = SocketIO()
