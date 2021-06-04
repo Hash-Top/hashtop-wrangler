@@ -8,7 +8,6 @@ from ..config import DEBUG
 from ..model import Gpu, Health
 from ..model.share import Share, ShareType
 from ..model.miner import Miner
-from ..util.helpers import batched_query
 
 
 def create_new_miner(data, user):
