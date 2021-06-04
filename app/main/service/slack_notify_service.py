@@ -14,7 +14,7 @@ def notify_slack(invalid_share):
     gpu_no = invalid_share.gpu_no
     miner_id = invalid_share.miner_id
     miner_name = db.session.query(Miner) \
-        .filter(id=miner_id)\
+        .filter(Miner.id == miner_id)\
         .first()\
         .name
 
