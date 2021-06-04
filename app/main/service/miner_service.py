@@ -1,11 +1,14 @@
+import itertools
+from datetime import datetime, timedelta
 from sqlalchemy import select
 
 from app.main import db
 from . import logger, update, delete, save_changes
-
+from ..config import DEBUG
 from ..model import Gpu, Health
-from ..model.share import Share
+from ..model.share import Share, ShareType
 from ..model.miner import Miner
+from ..util.helpers import batched_query
 
 
 def create_new_miner(data, user):
@@ -66,29 +69,84 @@ def get_healths_by_miner(miner, start, end):
     return stats
 
 
-def get_shares_by_miner(miner, start, end):
+def get_shares_by_miner(miner, start, end, resolution):
+    # not using default because it only affects empty function calls
+    start = start or (datetime.utcnow() - timedelta(hours=12))
+    end = end or datetime.utcnow()
+    resolution = resolution or 5
     # get all share stats for all gpus in the miner
-    share_table = db.metadata.tables['share']
-    gpu_table = db.metadata.tables['gpu']
-    gpu_share_stats = select(share_table).select_from(
-        share_table.join(gpu_table)).where(share_table.c.miner_id == miner.id)
+    query = db.session.query(Share) \
+        .filter(Share.miner_id == miner.id) \
+        .filter(Share.time >= start) \
+        .filter(Share.time <= end) \
+        .order_by(Share.time)
 
-    if start:
-        gpu_share_stats = gpu_share_stats.where(share_table.time >= start)
-    if end:
-        gpu_share_stats = gpu_share_stats.where(share_table.time <= end)
+    logger.debug(f"start time: {start} - end time: {end}")
+    logger.debug(query)
 
-    logger.debug(gpu_share_stats)
-    result = db.engine.connect().execute(gpu_share_stats)
+    return aggregate(query, 5, "gpu_no", type="count")
 
-    shares = []
-    # more efficient than querying using .all() so python doesn't load everything at once
-    for s in result.yield_per(100):
-        d = dict(s)
-        # replace the enum with its string
-        d['type'] = s.type.name
-        shares.append(d)
 
-    logger.debug(result)
+def round_minutes(dt, resolution):
+    new_minute = (dt.minute // resolution) * resolution
+    return (dt + timedelta(minutes=new_minute - dt.minute)).replace(second=0, microsecond=0)
 
-    return shares
+
+def aggregate(query, resolution, *groups, **aggregates):
+    logger.debug(query)
+
+    agg = {}
+    window_size = 5000  # or whatever limit you like
+    window_idx = 0
+    while True:
+        start, stop = window_size * window_idx, window_size * (window_idx + 1)
+        rows = query.slice(start, stop).all()
+        if rows is None:
+            break
+        for row in rows:
+            interval_time = round_minutes(row.time, resolution)
+            # key the aggregate based on the groups given
+            key_list = [getattr(row, x) for x in groups]
+            # apparently using insert is the fastest way to do this
+            key_list.insert(0, interval_time)
+            key = tuple(key_list)
+
+            if key not in agg:
+                # build a dict from the list of groups and aggregate cols
+                agg[key] = {
+                    'start': interval_time,
+                    'duration': resolution,
+                    # splice in the groups given so that each dict val can be flattened into a JSON array
+                    **{group: getattr(row, group) for group in groups},
+                    # handle "normal" aggregate cases
+                    **{attr: getattr(row, attr) for (attr, agg_type) in aggregates.items() if agg_type != "count"},
+                    # counts are handled by counting the number of distinct values that the attribute can take on
+                    **{str(getattr(row, attr)): 0 for (attr, agg_type) in aggregates.items() if agg_type == "count"}
+                }
+            if DEBUG:
+                print(agg[key])
+            for attribute, aggregate_type in aggregates.items():
+                # handle count case first, little bit ugly
+                if aggregate_type == "count":
+                    count_field = str(getattr(row, attribute))
+                    # if the key doesnt include the aggregate we need to create an entry for it in the dict
+                    agg[key].setdefault(count_field, 0)
+                    # finally we can increment the count
+                    agg[key][count_field] += 1
+                else:
+                    aggregate_val = agg[key][attribute]
+                    if aggregate_type == 'max':
+                        agg[key][attribute] = max(getattr(row, attribute), aggregate_val)
+                    elif aggregate_type == "min":
+                        agg[key][attribute] = min(getattr(row, attribute), aggregate_val)
+                    elif aggregate_type == "sum":
+                        agg[key][attribute] += getattr(row, attribute)
+
+        if len(rows) < window_size:
+            break
+        window_idx += 1
+    if DEBUG:
+        for item in agg.values():
+            print(item)
+    logger.debug(next(iter(agg.values()), None))
+    return list(agg.values())

@@ -48,6 +48,14 @@ class MinerDto:
         'type': fields.String(enum=[enum.name for enum in ShareType], description="invalid, valid or stale"),
     })
 
+    share_aggregate = namespace.model('share_aggregate', {
+        'start': fields.DateTime(required=True, description="the time at which the aggregation starts"),
+        'duration': fields.Integer(required=True, description="the length of the aggregation period, in minutes"),
+        'gpu_no': fields.Integer(required=True, description="the gpu that the share was generated on"),
+        'valid': fields.Integer(required=False, description="# of shares generated of this type"),
+        'invalid': fields.Integer(required=False, description="# of shares generated of this type"),
+    })
+
     health = namespace.model('health', {
         'miner_id': fields.String(required=False, description="the miners UUID"),
         'gpu_no': fields.Integer(required=True, description="the gpu that the share was generated on"),
