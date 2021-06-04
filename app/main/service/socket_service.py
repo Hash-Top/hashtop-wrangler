@@ -6,6 +6,7 @@ from app.main.model.miner import Miner
 from app.main.model.share import Share, ShareType
 from .miner_service import get_miner
 from . import logger, update, delete, save_changes
+from .slack_notify_service import notify_slack
 from ..model import Gpu, Health
 
 
@@ -25,6 +26,10 @@ def update_shares(miner_uuid, data):
                 type=ShareType[share_type],
                 time=datetime.fromtimestamp(ts)
             )
+            # notify slack of invalid shares
+            if share_type == 'invalid':
+                notify_slack(new_share)
+
             save_changes(new_share)
             response_object = {
                 'status': 'success',
