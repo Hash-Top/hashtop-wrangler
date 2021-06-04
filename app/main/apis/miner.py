@@ -1,3 +1,4 @@
+import dateutil.parser
 from flask import request
 from flask_restplus import Resource
 from .. import socketio
@@ -22,6 +23,7 @@ api = MinerDto.namespace
 _miner = MinerDto.miner
 _health = MinerDto.health
 _share = MinerDto.share
+_share_aggregate = MinerDto.share_aggregate
 stats_schema = MinerDto.StatsQuerySchema()
 
 
@@ -121,7 +123,8 @@ class MinerShares(Resource):
     # TODO: add default limits ^
     @api.param('end', "Optional time after which to retrieve stats")
     @api.param('start', "Optional time before which to retrieve stats")
-    @api.marshal_list_with(_share)
+    @api.param('resolution', "Optional resolution of time aggregation in seconds")
+    @api.marshal_list_with(_share_aggregate)
     # TODO: resecure before full prod deploy
     # @token_required
     def get(self, miner_id):
@@ -131,8 +134,21 @@ class MinerShares(Resource):
             api.abort(404)
         else:
             """validate the query params"""
-            errors = stats_schema.validate(request.args)
-            if errors:
-                api.abort(400, error="Start/end datetime param improperly formatted")
+            start = request.args.get('start')
+            end = request.args.get('end')
 
-        return get_shares_by_miner(miner, request.args.get('start'), request.args.get('end'))
+            start_dt = None
+            end_dt = None
+            if start:
+                start_dt = dateutil.parser.parse(start)
+            if end:
+                end_dt = dateutil.parser.parse(end)
+
+            #errors = stats_schema.validate(start_dt, end_dt)
+            #if errors:
+            #    api.abort(400, error="Start/end datetime param improperly formatted")
+
+        return get_shares_by_miner(miner,
+                                   start_dt,
+                                   end_dt,
+                                   request.args.get('resolution'))

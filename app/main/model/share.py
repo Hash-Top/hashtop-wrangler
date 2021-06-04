@@ -16,6 +16,9 @@ class ShareType(enum.Enum):
     invalid = "invalid share"
     stale = "stale share (reported by pool)"
 
+    def __str__(self):
+        return self.name
+
 
 class Share(Base):
     __tablename__ = "share"
@@ -32,7 +35,7 @@ class Share(Base):
     miner_id = Column(UNIQUEIDENTIFIER, primary_key=True)
     gpu_no = Column(Integer, primary_key=True)
 
-    type = Column(Enum(ShareType), nullable=False)
+    type = Column(Enum(ShareType), primary_key=True)
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
