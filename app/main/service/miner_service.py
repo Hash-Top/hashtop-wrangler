@@ -8,7 +8,6 @@ from ..config import DEBUG
 from ..model import Gpu, Health
 from ..model.share import Share, ShareType
 from ..model.miner import Miner
-from ..util.helpers import batched_query
 
 
 def create_new_miner(data, user):
@@ -75,14 +74,20 @@ def get_shares_by_miner(miner, start, end, resolution):
     end = end or datetime.utcnow()
     resolution = resolution or 5
     # get all share stats for all gpus in the miner
-    query = db.session.query(Share) \
+    timeframe_query = db.session.query(Share) \
         .filter(Share.miner_id == miner.id) \
         .filter(Share.time >= start) \
         .filter(Share.time <= end) \
         .order_by(Share.time)
-
     logger.debug(f"start time: {start} - end time: {end}")
-    logger.debug(query)
+    logger.debug(timeframe_query)
+
+    min_query = db.session.query(Share) \
+        .filter(Share.miner_id == miner.id) \
+        .order_by(Share.time)\
+        .limit(50000)
+
+    query = timeframe_query if timeframe_query.count() > min_query.count() else min_query
 
     return aggregate(query, 5, "gpu_no", type="count")
 
