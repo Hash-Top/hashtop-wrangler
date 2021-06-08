@@ -82,14 +82,7 @@ def get_shares_by_miner(miner, start, end, resolution):
     logger.debug(f"start time: {start} - end time: {end}")
     logger.debug(timeframe_query)
 
-    min_query = db.session.query(Share) \
-        .filter(Share.miner_id == miner.id) \
-        .order_by(Share.time)\
-        .limit(50000)
-
-    query = timeframe_query if timeframe_query.count() > min_query.count() else min_query
-
-    return aggregate(query, 5, "gpu_no", type="count")
+    return aggregate(timeframe_query, resolution, "gpu_no", type="count")
 
 
 def round_minutes(dt, resolution):
@@ -128,8 +121,7 @@ def aggregate(query, resolution, *groups, **aggregates):
                     # counts are handled by counting the number of distinct values that the attribute can take on
                     **{str(getattr(row, attr)): 0 for (attr, agg_type) in aggregates.items() if agg_type == "count"}
                 }
-            if DEBUG:
-                print(agg[key])
+
             for attribute, aggregate_type in aggregates.items():
                 # handle count case first, little bit ugly
                 if aggregate_type == "count":
@@ -151,7 +143,7 @@ def aggregate(query, resolution, *groups, **aggregates):
             break
         window_idx += 1
     if DEBUG:
-        for item in agg.values():
-            print(item)
-    logger.debug(next(iter(agg.values()), None))
+        item = next(iter(agg.values()), None)
+        print(item)
+        logger.debug(item)
     return list(agg.values())
