@@ -2,9 +2,10 @@ import datetime
 import os
 from app.main import db
 import pytz
+from dotenv import load_dotenv
 from slack_sdk.webhook import WebhookClient
 from app.main.model import Miner
-
+load_dotenv()
 slack_url = os.getenv("SLACK_WEB_HOOK_URL")
 webhook = WebhookClient(slack_url)
 
@@ -20,7 +21,7 @@ def notify_slack(invalid_share):
 
     title = "Invalid share reported"
 
-    text = f"[{time}] {miner_name} - {gpu_no}"
+    text = f"[{time}] {title} \t\n{miner_name} - {gpu_no}"
 
     blocks = [{
         "type": "section",
