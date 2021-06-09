@@ -14,14 +14,15 @@ def notify_slack(invalid_share):
     time = invalid_share.time
     gpu_no = invalid_share.gpu_no
     miner_id = invalid_share.miner_id
-    miner_name = db.session.query(Miner) \
+    miner = db.session.query(Miner) \
         .filter(Miner.id == miner_id)\
-        .first()\
-        .name
+        .first()
+    miner_name = miner.name
+    miner_user = miner.user.username
 
     title = "Invalid share reported"
 
-    text = f"[{time}] {title} \t\n{miner_name} - {gpu_no}"
+    text = f"**[{time}]** {title} \n\t{miner_user} - {miner_name} : GPU {gpu_no}"
 
     blocks = [{
         "type": "section",
