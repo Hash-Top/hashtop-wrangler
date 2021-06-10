@@ -59,6 +59,8 @@ class ProductionConfig(Config):
                                os.getenv('AZURE_UID'),
                                os.getenv('AZURE_PWD')
                                )
+    # increase the concurrency limits for prod
+    conn_str = conn_str + 'pool_size=20; max_overflow=0'
     SQLALCHEMY_DATABASE_URI = 'mssql+pyodbc:///?odbc_connect=' + urllib.parse.quote(conn_str)
 
 
