@@ -49,7 +49,59 @@ def update_shares(miner_uuid, data):
             'message': f'No miner matching the UUID {miner_uuid}.',
         }
 
-        response_payload =  response_object, 409
+        response_payload = response_object, 409
+
+    if os.getenv('DEBUG').upper() == 'TRUE':
+        print(response_payload)
+    return response_payload
+
+
+def update_healths(miner_uuid, data):
+    miner = get_miner(miner_uuid)
+
+    if miner:
+        ts = int(data.get('timestamp'))
+        gpu_no = data.get('gpu_no')
+        gpu_name = data.get('gpu_name')
+        fan_speed = data.get('fan_speed')
+        temperature = data.get('temperature')
+        power_draw = data.get('power_draw')
+        power_limit = data.get('power_limit')
+        gpu = get_gpu(miner, gpu_no)
+
+        if gpu:
+            # create a new share object in the db from the websocket payload
+            new_health = Health(
+                time=datetime.fromtimestamp(ts),
+                miner_id=miner_uuid,
+                gpu_no=gpu_no,
+                gpu_name=gpu_name,
+                fan_speed=fan_speed,
+                temperature=temperature,
+                power_draw=power_draw,
+                power_limit=power_limit
+            )
+
+            save_changes(new_health)
+            response_object = {
+                'status': 'success',
+                'message': f'Successfully added new health data for gpu {gpu_no}.'
+            }
+            response_payload = response_object, 201
+        else:
+            response_object = {
+                'status': 'fail',
+                'message': f'GPU {gpu_no} doesn\'t exist in this miner.',
+            }
+            response_payload = response_object, 409
+
+    else:
+        response_object = {
+            'status': 'fail',
+            'message': f'No miner matching the UUID {miner_uuid}.',
+        }
+
+        response_payload = response_object, 409
 
     if os.getenv('DEBUG').upper() == 'TRUE':
         print(response_payload)
