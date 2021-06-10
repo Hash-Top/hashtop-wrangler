@@ -4,6 +4,7 @@ from sqlalchemy.dialects.mssql import UNIQUEIDENTIFIER
 from sqlalchemy import (
     Column,
     Integer,
+    String,
     ForeignKey,
     DateTime,
     Float,
@@ -20,6 +21,7 @@ class Gpu(Base):
     )
 
     gpu_no = Column(Integer, primary_key=True)
+    gpu_name = Column(String, primary_key=False)
     miner_id = Column(UNIQUEIDENTIFIER,
                       ForeignKey("miner.id",
                                  ondelete="CASCADE"),
@@ -30,7 +32,8 @@ class Gpu(Base):
                            cascade="all, delete-orphan")
 
     shares = relationship("Share",
-                           cascade="all, delete-orphan")
+                          cascade="all, delete-orphan")
+
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
@@ -49,11 +52,12 @@ class Health(Base):
     # don't need backpopulates because we only ever insert into this table
     miner_id = Column(UNIQUEIDENTIFIER, primary_key=True)
     gpu_no = Column(Integer, primary_key=True)
+    gpu_name = Column(String, primary_key=False)
 
+    fan_speed = Column(Integer)
     temperature = Column(Integer)
-    power = Column(Integer)
-    hashrate = Column(Float)
+    power_draw = Column(Integer)
+    power_limit = Column(Integer)
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
-
