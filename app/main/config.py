@@ -26,6 +26,7 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
+    SQLALCHEMY_ECHO = True
     conn_str = 'Driver={ODBC Driver 17 for SQL Server};' \
                'Server=127.0.0.1,43111;' \
                'uid=SA;' \
@@ -38,6 +39,7 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     DEBUG = True
     TESTING = True
+    SQLALCHEMY_ECHO = True
     conn_str = 'Driver={ODBC Driver 17 for SQL Server};' \
                'Server=127.0.0.1,43111;' \
                'uid=SA;' \
@@ -49,13 +51,16 @@ class TestingConfig(Config):
 
 
 class ProductionConfig(Config):
-    DEBUG = os.getenv('DEBUG').upper() == 'TRUE'
+    DEBUG = (os.getenv('DEBUG') or 'false').upper() == 'TRUE'
+    SQLALCHEMY_ECHO = DEBUG
 
     conn_str = conn_str.format(os.getenv('AZURE_SERVER'),
                                os.getenv('PROD_DB_NAME'),
                                os.getenv('AZURE_UID'),
                                os.getenv('AZURE_PWD')
                                )
+    # increase the concurrency limits for prod
+    conn_str = conn_str + 'pool_size=20; max_overflow=0'
     SQLALCHEMY_DATABASE_URI = 'mssql+pyodbc:///?odbc_connect=' + urllib.parse.quote(conn_str)
 
 
@@ -64,5 +69,5 @@ config_by_name = dict(
     TEST=TestingConfig,
     PROD=ProductionConfig
 )
-
+DEBUG = (os.getenv('DEBUG') or 'false').upper() == 'TRUE'
 key = Config.SECRET_KEY
