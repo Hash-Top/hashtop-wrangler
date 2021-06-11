@@ -17,7 +17,10 @@ class MinerSocket(Namespace):
 
     def on_health_update(self, miner_uuid, data):
         print("received args: " + ", ".join([miner_uuid, str(data)]))
-        return update_healths(miner_uuid, data)
+        responses = []
+        for health in data:
+            responses.append(update_healths(miner_uuid, health))
+        return responses
 
 
 socketio.on_namespace(MinerSocket('/'))
