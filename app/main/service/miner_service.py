@@ -49,23 +49,25 @@ def get_miner_by_name(user, miner_name):
     return db.session(Miner).filter_by(user=user, name=miner_name)
 
 
-def get_healths_by_miner(miner, start, end):
+def get_healths_by_miner(miner, start, end, resolution):
+    # not using default because it only affects empty function calls
+    start = start or (datetime.utcnow() - timedelta(hours=12))
+    end = end or datetime.utcnow()
+    resolution = resolution or 1
     # get all health stats for all gpus in the miner
-    gpu_health_stats = db.session.query(Health) \
-        .join(Gpu) \
-        .filter(Gpu.miner == miner)
+    timeframe_query = db.session.query(Health) \
+        .filter(Health.miner_id == miner.id) \
+        .filter(Health.time >= start) \
+        .filter(Health.time <= end) \
+        .order_by(Health.time)
+    logger.debug(f"start time: {start} - end time: {end}")
+    logger.debug(timeframe_query)
 
-    if start:
-        gpu_health_stats = gpu_health_stats.filter(Gpu.healths.time >= start)
-    if end:
-        gpu_health_stats = gpu_health_stats.filter(Gpu.healths.time <= end)
-
-    stats = []
-    # more efficient than querying using .all() so python doesn't load everything at once
-    for s in gpu_health_stats.yield_per(100).limit(1000000):
-        stats.append(s)
-
-    return stats
+    return aggregate(timeframe_query, resolution, "gpu_no",
+                     fan_speed="avg",
+                     temperature="avg",
+                     power_draw="avg",
+                     power_limit="avg")
 
 
 def get_shares_by_miner(miner, start, end, resolution):
@@ -117,7 +119,8 @@ def aggregate(query, resolution, *groups, **aggregates):
                     # splice in the groups given so that each dict val can be flattened into a JSON array
                     **{group: getattr(row, group) for group in groups},
                     # handle "normal" aggregate cases
-                    **{attr: getattr(row, attr) for (attr, agg_type) in aggregates.items() if agg_type != "count"},
+                    **{attr: getattr(row, attr) for (attr, agg_type) in aggregates.items()
+                       if agg_type != "count" and agg_type != "avg"},
                     # counts are handled by counting the number of distinct values that the attribute can take on
                     **{str(getattr(row, attr)): 0 for (attr, agg_type) in aggregates.items() if agg_type == "count"}
                 }
@@ -131,19 +134,31 @@ def aggregate(query, resolution, *groups, **aggregates):
                     # finally we can increment the count
                     agg[key][count_field] += 1
                 else:
-                    aggregate_val = agg[key][attribute]
-                    if aggregate_type == 'max':
+                    aggregate_val = agg[key].get(attribute)
+                    if aggregate_type == "max":
                         agg[key][attribute] = max(getattr(row, attribute), aggregate_val)
                     elif aggregate_type == "min":
                         agg[key][attribute] = min(getattr(row, attribute), aggregate_val)
                     elif aggregate_type == "sum":
                         agg[key][attribute] += getattr(row, attribute)
+                    elif aggregate_type == "avg":
+                        # to calculate the avg all of the values must be stored
+                        agg[key].setdefault(attribute, []).append(getattr(row, attribute))
 
         if len(rows) < window_size:
             break
         window_idx += 1
+
+    # go through and calculate the avg for any aggregates
+    for a in agg.values():
+        for attribute, aggregate_type in aggregates.items():
+            if aggregate_type == "avg":
+                # find the avg of the list stored for the avg aggregate
+                a[attribute] = sum(a[attribute]) / len(a[attribute])
+
     if DEBUG:
         item = next(iter(agg.values()), None)
         print(item)
         logger.debug(item)
+
     return list(agg.values())
