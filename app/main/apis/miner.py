@@ -22,6 +22,7 @@ from flask_socketio import SocketIO, emit
 api = MinerDto.namespace
 _miner = MinerDto.miner
 _health = MinerDto.health
+_health_aggregate = MinerDto.health_aggregate
 _share = MinerDto.share
 _share_aggregate = MinerDto.share_aggregate
 stats_schema = MinerDto.StatsQuerySchema()
@@ -92,28 +93,44 @@ class Miner(Resource):
             return delete(miner)
 
 
-@api.route('<miner_id>/health')
+@api.route('/<miner_id>/health')
 @api.param('miner_id', "The miner's id")
 @api.response(404, 'No User/Miner with that id.')
 class MinerHealths(Resource):
     # TODO: add default limits ^
     @api.param('end', "Optional time after which to retrieve stats")
     @api.param('start', "Optional time before which to retrieve stats")
-    @api.marshal_list_with(_health)
+    @api.marshal_list_with(_health_aggregate)
     # TODO: resecure before full prod deploy
     # @token_required
     def get(self, miner_id):
-        """ Get a miner's temp, hashrate and power usage by gpu. Not specifying start or end will return the past 7 days of stats """
+        """ Get a miner's temp, hashrate and power usage by gpu. Not specifying start or end will return the past 12 hrs of stats """
         miner = get_miner(miner_id)
         if not miner:
             api.abort(404)
         else:
             """validate the query params"""
-            errors = stats_schema.validate(request.args)
-            if errors:
-                api.abort(400, error="Start/end datetime param improperly formatted")
+            start = request.args.get('start')
+            end = request.args.get('end')
+            res = request.args.get('resolution')
 
-        return get_healths_by_miner(miner, request.args.get('start'), request.args.get('end'))
+            start_dt = None
+            end_dt = None
+            if start:
+                start_dt = dateutil.parser.parse(start)
+            if end:
+                end_dt = dateutil.parser.parse(end)
+            if res:
+                res = int(res)
+
+            # errors = stats_schema.validate(start_dt, end_dt)
+            # if errors:
+            #    api.abort(400, error="Start/end datetime param improperly formatted")
+
+        return get_healths_by_miner(miner,
+                                   start_dt,
+                                   end_dt,
+                                   res)
 
 
 @api.route('/<miner_id>/share')
@@ -136,6 +153,7 @@ class MinerShares(Resource):
             """validate the query params"""
             start = request.args.get('start')
             end = request.args.get('end')
+            res = request.args.get('resolution')
 
             start_dt = None
             end_dt = None
@@ -143,12 +161,14 @@ class MinerShares(Resource):
                 start_dt = dateutil.parser.parse(start)
             if end:
                 end_dt = dateutil.parser.parse(end)
+            if res:
+                res = int(res)
 
-            #errors = stats_schema.validate(start_dt, end_dt)
-            #if errors:
+            # errors = stats_schema.validate(start_dt, end_dt)
+            # if errors:
             #    api.abort(400, error="Start/end datetime param improperly formatted")
 
         return get_shares_by_miner(miner,
                                    start_dt,
                                    end_dt,
-                                   request.args.get('resolution'))
+                                   res)
