@@ -22,7 +22,7 @@ def notify_slack(invalid_share):
 
     title = "Invalid share reported"
 
-    text = f"**[{time}]** {title} \n\t{miner_user} - {miner_name} : GPU {gpu_no}"
+    text = f"***[{time}]*** {title} \n\t{miner_user} - {miner_name} : GPU {gpu_no}"
 
     blocks = [{
         "type": "section",

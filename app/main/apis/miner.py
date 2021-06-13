@@ -112,6 +112,7 @@ class MinerHealths(Resource):
             """validate the query params"""
             start = request.args.get('start')
             end = request.args.get('end')
+            res = request.args.get('resolution')
 
             start_dt = None
             end_dt = None
@@ -119,15 +120,17 @@ class MinerHealths(Resource):
                 start_dt = dateutil.parser.parse(start)
             if end:
                 end_dt = dateutil.parser.parse(end)
+            if res:
+                res = int(res)
 
             # errors = stats_schema.validate(start_dt, end_dt)
             # if errors:
             #    api.abort(400, error="Start/end datetime param improperly formatted")
 
         return get_healths_by_miner(miner,
-                                    start_dt,
-                                    end_dt,
-                                    int(request.args.get('resolution')))
+                                   start_dt,
+                                   end_dt,
+                                   res)
 
 
 @api.route('/<miner_id>/share')
@@ -150,6 +153,7 @@ class MinerShares(Resource):
             """validate the query params"""
             start = request.args.get('start')
             end = request.args.get('end')
+            res = request.args.get('resolution')
 
             start_dt = None
             end_dt = None
@@ -157,6 +161,8 @@ class MinerShares(Resource):
                 start_dt = dateutil.parser.parse(start)
             if end:
                 end_dt = dateutil.parser.parse(end)
+            if res:
+                res = int(res)
 
             # errors = stats_schema.validate(start_dt, end_dt)
             # if errors:
@@ -165,4 +171,4 @@ class MinerShares(Resource):
         return get_shares_by_miner(miner,
                                    start_dt,
                                    end_dt,
-                                   int(request.args.get('resolution')))
+                                   res)

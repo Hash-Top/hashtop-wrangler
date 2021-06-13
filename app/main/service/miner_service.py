@@ -63,7 +63,9 @@ def get_healths_by_miner(miner, start, end, resolution):
     logger.debug(f"start time: {start} - end time: {end}")
     logger.debug(timeframe_query)
 
-    return aggregate(timeframe_query, resolution, "gpu_no",
+    return aggregate(timeframe_query, resolution,
+                     "gpu_no",
+                     "gpu_name",
                      fan_speed="avg",
                      temperature="avg",
                      power_draw="avg",
@@ -124,7 +126,6 @@ def aggregate(query, resolution, *groups, **aggregates):
                     # counts are handled by counting the number of distinct values that the attribute can take on
                     **{str(getattr(row, attr)): 0 for (attr, agg_type) in aggregates.items() if agg_type == "count"}
                 }
-
             for attribute, aggregate_type in aggregates.items():
                 # handle count case first, little bit ugly
                 if aggregate_type == "count":
@@ -139,7 +140,6 @@ def aggregate(query, resolution, *groups, **aggregates):
                         agg[key][attribute] = max(getattr(row, attribute), aggregate_val)
                     elif aggregate_type == "min":
                         agg[key][attribute] = min(getattr(row, attribute), aggregate_val)
-                    elif aggregate_type == "sum":
                         agg[key][attribute] += getattr(row, attribute)
                     elif aggregate_type == "avg":
                         # to calculate the avg all of the values must be stored
