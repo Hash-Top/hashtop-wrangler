@@ -69,7 +69,8 @@ def get_healths_by_miner(miner, start, end, resolution):
                      fan_speed="avg",
                      temperature="avg",
                      power_draw="avg",
-                     power_limit="avg")
+                     power_limit="avg",
+                     hashrate="avg")
 
 
 def get_shares_by_miner(miner, start, end, resolution):
@@ -143,7 +144,10 @@ def aggregate(query, resolution, *groups, **aggregates):
                         agg[key][attribute] += getattr(row, attribute)
                     elif aggregate_type == "avg":
                         # to calculate the avg all of the values must be stored
-                        agg[key].setdefault(attribute, []).append(getattr(row, attribute))
+                        val = getattr(row, attribute)
+                        if not val:
+                            val = 0
+                        agg[key].setdefault(attribute, []).append(val)
 
         if len(rows) < window_size:
             break

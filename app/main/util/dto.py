@@ -74,6 +74,9 @@ class MinerDto:
         'temperature': fields.Integer(required=False, description="the gpus temperature in C"),
         'power_draw': fields.Integer(required=False, description="the gpus power usage in watts"),
         'power_limit': fields.Integer(required=False, description="the gpus power limit in watts"),
+        'hashrate': fields.Float(required=False, description="the gpus hashrate in megahash"),
+        'core': fields.Integer(required=False, description="the gpus core clock in Mhz"),
+        'memory': fields.Integer(required=False, description="the gpus memory clock in Mhz"),
 
     })
 

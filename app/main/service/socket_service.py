@@ -58,31 +58,43 @@ def update_shares(miner_uuid, data):
 
 def update_healths(miner_uuid, data):
     miner = get_miner(miner_uuid)
-
     if miner:
-        ts = int(data.get('timestamp'))
+        ts = datetime.fromtimestamp(int(data.get('timestamp')))
         gpu_no = data.get('gpu_no')
         gpu_name = data.get('gpu_name')
         fan_speed = data.get('fan_speed')
         temperature = data.get('temperature')
         power_draw = data.get('power_draw')
         power_limit = data.get('power_limit')
+        hashrate = data.get('hashrate')
+        core = data.get('core')
+        memory = data.get('memory')
+
         gpu = get_gpu(miner, gpu_no)
 
         if gpu:
             # create a new share object in the db from the websocket payload
             new_health = Health(
-                time=datetime.fromtimestamp(ts),
+                time=ts,
                 miner_id=miner_uuid,
                 gpu_no=gpu_no,
                 gpu_name=gpu_name,
                 fan_speed=fan_speed,
                 temperature=temperature,
                 power_draw=power_draw,
-                power_limit=power_limit
+                power_limit=power_limit,
+                hashrate=hashrate,
+                core=core,
+                memory=memory
             )
 
-            save_changes(new_health)
+            # check if we need to do an update instead of insert
+            to_update = db.session.query(Health).filter_by(miner_id=miner_uuid, time=ts).first()
+            if to_update:
+                update(to_update, new_health)
+            else:
+                save_changes(new_health)
+
             response_object = {
                 'status': 'success',
                 'message': f'Successfully added new health data for gpu {gpu_no}.'
