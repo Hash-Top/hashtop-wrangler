@@ -89,7 +89,7 @@ def update_healths(miner_uuid, data):
             )
 
             # check if we need to do an update instead of insert
-            to_update = db.session.query(Health).filter_by(miner_id=miner_uuid, time=ts).first()
+            to_update = db.session.query(Health).filter_by(miner_id=miner_uuid, time=ts)
             if to_update:
                 update(to_update, new_health)
             else:
