@@ -91,7 +91,7 @@ def update_healths(miner_uuid, data):
             # check if we need to do an update instead of insert
             to_update = db.session.query(Health).filter_by(miner_id=miner_uuid, time=ts, gpu_no=gpu_no).first()
             if to_update:
-                for attr, val in new_health.as_dict():
+                for attr, val in new_health.as_dict().items():
                     setattr(to_update, attr, val)
                 save_changes(to_update)
             else:
