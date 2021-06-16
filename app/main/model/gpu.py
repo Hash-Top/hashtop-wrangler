@@ -54,10 +54,14 @@ class Health(Base):
     gpu_no = Column(Integer, primary_key=True)
     gpu_name = Column(String, primary_key=False)
 
-    fan_speed = Column(Integer)
-    temperature = Column(Integer)
-    power_draw = Column(Integer)
-    power_limit = Column(Integer)
+    fan_speed = Column(Integer, default=0)
+    temperature = Column(Integer, default=0)
+    power_draw = Column(Integer, default=0)
+    power_limit = Column(Integer, default=0)
+    hashrate = Column(Float, default=0)
+    core = Column(Integer, default=0)
+    memory = Column(Integer, default=0)
+
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
