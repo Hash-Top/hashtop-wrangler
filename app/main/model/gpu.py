@@ -59,8 +59,8 @@ class Health(Base):
     power_draw = Column(Integer, default=0)
     power_limit = Column(Integer, default=0)
     hashrate = Column(Float, default=0)
-    core = Column(Integer, default=0)
-    memory = Column(Integer, default=0)
+    core_clock = Column(Integer, default=0)
+    mem_clock = Column(Integer, default=0)
 
 
     def as_dict(self):

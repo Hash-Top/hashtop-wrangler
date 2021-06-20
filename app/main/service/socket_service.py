@@ -2,7 +2,6 @@ import os
 from datetime import datetime
 
 from app.main import db
-from app.main.model.miner import Miner
 from app.main.model.share import Share, ShareType
 from .miner_service import get_miner
 from . import logger, update, delete, save_changes
@@ -67,8 +66,8 @@ def update_healths(miner_uuid, data):
         power_draw = data.get('power_draw')
         power_limit = data.get('power_limit')
         hashrate = data.get('hashrate')
-        core = data.get('core')
-        memory = data.get('memory')
+        core_clock = data.get('core_clock')
+        mem_clock = data.get('mem_clock')
 
         gpu = get_gpu(miner, gpu_no)
 
@@ -84,8 +83,8 @@ def update_healths(miner_uuid, data):
                 power_draw=power_draw,
                 power_limit=power_limit,
                 hashrate=hashrate,
-                core=core,
-                memory=memory
+                core_clock=core_clock,
+                mem_clock=mem_clock
             )
 
             # check if we need to do an update instead of insert

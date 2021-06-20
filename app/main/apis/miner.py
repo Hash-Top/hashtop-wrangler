@@ -28,6 +28,29 @@ _share_aggregate = MinerDto.share_aggregate
 stats_schema = MinerDto.StatsQuerySchema()
 
 
+@api.route('/')
+@api.response(201, 'Miner successfully created.')
+@api.doc('create a new miner')
+@api.expect(_miner, validate=True)
+class Miner(Resource):
+    # TODO: remove before full prod deploy
+    # @token_required
+    def post(self):
+        """Creates a new Miner """
+        data = request.json
+        return create_new_miner(data)
+
+    def put(self):
+        """Updates a User's miner """
+        miner_id = request.json.get('miner_id')
+        miner = get_miner(miner_id)
+        if not miner:
+            api.abort(404)
+        else:
+            data = request.json
+            return update(miner, data)
+
+
 @api.route('/<user_id>/')
 @api.param('user_id', "User's id")
 @api.response(404, 'No User with that id.')
@@ -46,7 +69,7 @@ class MinerList(Resource):
 @api.param('username', "User's username")
 @api.param('miner_id', "The miner's id")
 @api.response(404, 'No User/Miner with that id.')
-class Miner(Resource):
+class UserMiner(Resource):
     @api.doc('list_of_miners_owned_by_this_user')
     @api.marshal_list_with(_miner, envelope='data')
     # TODO: remove before prod
@@ -55,31 +78,6 @@ class Miner(Resource):
         """List all miners owned by this user"""
         user = get_user_by_username(username=username)
         return get_all_miners(user)
-
-    @api.response(201, 'Miner successfully created.')
-    @api.doc('create a new miner')
-    @api.expect(_miner, validate=True)
-    # TODO: remove before full prod deploy
-    # @token_required
-    def post(self, username):
-        """Creates a new Miner """
-        data = request.json
-        user = get_user_by_username(username=username)
-        return create_new_miner(data, user)
-
-    @api.response(200, 'Miner successfully updated.')
-    @api.doc('update a miners information')
-    @api.expect(_miner, validate=True)
-    @token_required
-    def put(self, username, miner_id):
-        """Updates a User's miner """
-        user = get_user_by_username(username)
-        miner = get_miner(miner_id)
-        if not user or not miner:
-            api.abort(404)
-        else:
-            data = request.json
-            return update(miner, data)
 
     @api.response(200, 'Miner successfully deleted.')
     @api.doc("delete a user's miner")
@@ -128,9 +126,9 @@ class MinerHealths(Resource):
             #    api.abort(400, error="Start/end datetime param improperly formatted")
 
         return get_healths_by_miner(miner,
-                                   start_dt,
-                                   end_dt,
-                                   res)
+                                    start_dt,
+                                    end_dt,
+                                    res)
 
 
 @api.route('/<miner_id>/share')
