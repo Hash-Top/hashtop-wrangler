@@ -10,13 +10,12 @@ from ..model.share import Share, ShareType
 from ..model.miner import Miner
 
 
-def create_new_miner(data, user):
-    miner = db.session.query(Miner).filter_by(name=data.get('miner_name'),
-                                              user=user).first()
+def create_new_miner(data):
+    miner = db.session.query(Miner).filter_by(name=data.get('id')).first()
     if not miner:
         new_miner = Miner(
-            name=data.get('miner_name'),
-            user_id=user.id,
+            id=data.get('id'),
+            name=data.get('name'),
         )
         save_error = save_changes(new_miner)
         if save_error:
@@ -70,7 +69,9 @@ def get_healths_by_miner(miner, start, end, resolution):
                      temperature="avg",
                      power_draw="avg",
                      power_limit="avg",
-                     hashrate="avg")
+                     hashrate="avg",
+                     core_clock="avg",
+                     mem_clock="avg")
 
 
 def get_shares_by_miner(miner, start, end, resolution):
