@@ -1,5 +1,8 @@
 from app.main import db
 from app.main.model.blacklist import BlacklistToken
+from app.main.base_logger import logger
+
+logger = logger.getLogger(__name__)
 
 
 def save_token(token):
@@ -14,6 +17,7 @@ def save_token(token):
         }
         return response_object, 200
     except Exception as e:
+        logger.error(e)
         response_object = {
             'status': 'fail',
             'message': e

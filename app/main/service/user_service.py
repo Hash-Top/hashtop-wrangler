@@ -3,6 +3,9 @@ from app.main import db
 from app.main.model.user import User, UserStat
 from . import save_changes
 import uuid
+from app.main.base_logger import logger
+
+logger = logger.getLogger(__name__)
 
 
 def create_new_user(data):
@@ -62,6 +65,7 @@ def generate_token(user):
         }
         return response_object, 201
     except Exception as e:
+        logger.error(e)
         response_object = {
             'status': 'fail',
             'message': e

@@ -6,6 +6,9 @@ from app.main.model.user import User
 from .. import db
 from ..config import key
 from ..service.blacklist_service import save_token
+from app.main.base_logger import logger
+
+logger = logger.getLogger(__name__)
 
 
 class Auth:
@@ -32,7 +35,7 @@ class Auth:
                 return response_object, 401
 
         except Exception as e:
-            print(e)
+            logger.error(e)
             response_object = {
                 'status': 'fail',
                 'message': e

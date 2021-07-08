@@ -8,6 +8,9 @@ from app import blueprint
 from app.main import create_app, db, config_env, socketio
 from app.main.apis import miner_socket
 from app.main.model import user, miner, gpu
+from app.main.base_logger import logger
+
+logger = logger.getLogger(__name__)
 
 app = create_app()
 app.register_blueprint(blueprint)
@@ -17,13 +20,17 @@ manager = Manager(app)
 migrate = Migrate(app, db)
 
 manager.add_command('db', MigrateCommand)
-#TODO: there is no way in hell that this is SOP
+
+
+# TODO: there is no way in hell that this is SOP
 def get_app():
     return app
+
 
 @manager.command
 def run():
     socketio.run(app, port=5001)
+
 
 @manager.command
 def test():
@@ -54,6 +61,7 @@ def create_all():
     load_dotenv()
     engine = create_engine(config_env.SQLALCHEMY_DATABASE_URI, echo=True)
     Base.metadata.create_all(engine)
+
 
 if __name__ == '__main__':
     manager.run()

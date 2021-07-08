@@ -6,7 +6,7 @@
     <envs>
       <env name="PYTHONUNBUFFERED" value="1" />
       <env name="ENVIRONMENT" value="prod" />
-      <env name="DEBUG" value="True" />
+      <env name="LOGLEVEL" value="debug" />
     </envs>
     <option name="SDK_HOME" value="" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
