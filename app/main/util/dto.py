@@ -65,6 +65,21 @@ class MinerDto:
         'hashrate': fields.Float(required=False, description="the gpus hashrate in megahash"),
     })
 
+    health_aggregate = namespace.model('health_aggregate', {
+        'start': fields.DateTime(required=True, description="the time at which the aggregation starts"),
+        'duration': fields.Integer(required=True, description="the length of the aggregation period, in minutes"),
+        'gpu_no': fields.Integer(required=True, description="the gpu's index in the rig"),
+        'gpu_name': fields.String(required=True, description="the model of the gpu"),
+        'fan_speed': fields.Integer(required=False, description="the gpus fan speed as a percent"),
+        'temperature': fields.Integer(required=False, description="the gpus temperature in C"),
+        'power_draw': fields.Integer(required=False, description="the gpus power usage in watts"),
+        'power_limit': fields.Integer(required=False, description="the gpus power limit in watts"),
+        'hashrate': fields.Float(required=False, description="the gpus hashrate in megahash"),
+        'core_clock': fields.Integer(required=False, description="the gpus core clock in Mhz"),
+        'mem_clock': fields.Integer(required=False, description="the gpus memory clock in Mhz"),
+
+    })
+
     class StatsQuerySchema(Schema):
         start = fields.DateTime(required=False)
         end = fields.DateTime(required=False)
