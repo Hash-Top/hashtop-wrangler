@@ -34,6 +34,43 @@ def create_new_miner(data):
         return response_object, 409
 
 
+def update_miner(miner, data):
+    if data.get('name'):
+        miner.name = data.get('name')
+
+    if data.get('user_id'):
+        miner.user_id = data.get('user_id')
+
+    updated_gpus = {
+        g.get('gpu_no'):
+            {
+                'gpu_no': g.get('gpu_no'),
+                'gpu_name': g.get('gpu_name'),
+                'miner_id': miner.id
+            } for g in data.get('gpus')}
+
+    new_gpus = []
+    for gpu_no, gpu in updated_gpus.items():
+        existing = db.session.query(Gpu).filter_by(gpu_no=gpu_no, miner_id=miner.id).first()
+        if existing:
+            for attr, val in gpu.items():
+                setattr(existing, attr, val)
+        else:
+            new_gpus.append(gpu)
+
+    save_error = save_changes(miner)
+    if save_error: return save_error
+
+    save_error = save_changes(new_gpus)
+    if save_error: return save_error
+
+    response_object = {
+        'status': 'success',
+        'message': 'Successfully updated.'
+    }
+    return response_object, 200
+
+
 def get_all_miners(user):
     return db.session.query(Miner).filter_by(user=user).all()
 

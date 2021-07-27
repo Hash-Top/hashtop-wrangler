@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="run-flask" type="PythonConfigurationType" factoryName="Python">
+  <configuration default="false" name="prod" type="PythonConfigurationType" factoryName="Python">
     <module name="hashtop-wrangler" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />

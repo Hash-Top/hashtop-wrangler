@@ -34,8 +34,12 @@ def delete(obj):
 
 def save_changes(data):
     try:
-        db.session.add(data)
+        if isinstance(data, list):
+            db.session.add_all(data)
+        else:
+            db.session.add(data)
         db.session.commit()
     except exc.SQLAlchemyError as e:
         logger.error(e)
         return Response(response="Operation failed, check logs", status=500, mimetype='text/plain')
+

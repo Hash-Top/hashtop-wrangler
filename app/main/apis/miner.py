@@ -6,6 +6,7 @@ from ..service.user_service import get_stats_by_user
 from ..util.dto import MinerDto
 from ..service.miner_service import (
     create_new_miner,
+    update_miner,
     get_all_miners,
     get_miner,
     get_healths_by_miner,
@@ -21,6 +22,7 @@ from flask_socketio import SocketIO, emit
 
 api = MinerDto.namespace
 _miner = MinerDto.miner
+_miner_with_gpus = MinerDto.miner_with_gpus
 _health = MinerDto.health
 _health_aggregate = MinerDto.health_aggregate
 _share = MinerDto.share
@@ -31,24 +33,25 @@ stats_schema = MinerDto.StatsQuerySchema()
 @api.route('/')
 @api.response(201, 'Miner successfully created.')
 @api.doc('create a new miner')
-@api.expect(_miner, validate=True)
 class Miner(Resource):
     # TODO: remove before full prod deploy
     # @token_required
+    @api.expect(_miner, validate=True)
     def post(self):
         """Creates a new Miner """
         data = request.json
         return create_new_miner(data)
 
+    @api.expect(_miner_with_gpus, validate=True)
     def put(self):
         """Updates a User's miner """
-        miner_id = request.json.get('miner_id')
+        miner_id = request.json.get('id')
         miner = get_miner(miner_id)
         if not miner:
-            api.abort(404)
+            api.abort(404, error="no miner exists for the specified id")
         else:
             data = request.json
-            return update(miner, data)
+            return update_miner(miner, data)
 
 
 @api.route('/<user_id>/')

@@ -37,8 +37,20 @@ class MinerDto:
 
     miner = namespace.model('miner', {
         'id': fields.String(required=False, description="the miners UUID"),
+        'name': fields.String(required=True, description="name of the miner set by the user"),
+        'user_id': fields.String(required=False, description="user id of the user that the miner belongs to"),
+    })
+
+    gpu = namespace.model('gpu', {
+        'gpu_no': fields.Integer(required=True, description="index of the gpu in the miner"),
+        'gpu_name': fields.String(required=True, description="the brand and name of the gpu"),
+    })
+
+    miner_with_gpus = namespace.model('miner_update', {
+        'id': fields.String(required=True, description="the miners UUID"),
         'name': fields.String(required=False, description="name of the miner set by the user"),
         'user_id': fields.String(required=False, description="user id of the user that the miner belongs to"),
+        'gpus': fields.List(fields.Nested(gpu), required=False, description="an array of gpu objects")
     })
 
     share = namespace.model('share', {
