@@ -8,7 +8,7 @@ from ..service.user_service import (
     get_stats_by_user,
 )
 from ..service import update, delete
-from ..util.decorators import token_required
+from ..util.decorators import token_required, api_token_required
 
 api = UserDto.namespace
 _user_post = UserDto.user_post
@@ -21,6 +21,7 @@ stats_schema = UserDto.StatsQuerySchema()
 class UserList(Resource):
     @api.doc('list_of_registered_users')
     @api.marshal_list_with(_user_post, envelope='data')
+    @api_token_required
     def get(self):
         """List all registered users"""
         return get_all_users()
@@ -28,6 +29,7 @@ class UserList(Resource):
     @api.response(201, 'User successfully created.')
     @api.doc('create a new user')
     @api.expect(_user_post, validate=True)
+    @api_token_required
     def post(self):
         """Creates a new User """
         data = request.json
@@ -40,6 +42,7 @@ class UserList(Resource):
 class User(Resource):
     @api.doc('get a user')
     @api.marshal_with(_user_get)
+    @api_token_required
     def get(self, username):
         """Get a User by their username"""
         user = get_user_by_username(username)
@@ -82,6 +85,7 @@ class User(Resource):
 @api.response(404, 'No user with that username.')
 class UserStats(Resource):
     @api.marshal_list_with(_stat)
+    @api_token_required
     def get(self, username):
         """Get a User's stats"""
         user = get_user_by_username(username)
