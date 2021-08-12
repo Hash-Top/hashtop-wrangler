@@ -4,14 +4,15 @@ from datetime import datetime
 from app.main import db
 from app.main.model.share import Share, ShareType
 from .miner_service import get_miner
-from . import logger, update, delete, save_changes
+from . import update, delete, save_changes
 from .slack_notify_service import notify_slack
 from ..model import Gpu, Health
+from app.main.base_logger import logger
 
+logger = logger.getLogger(__name__)
 
 def update_shares(miner_uuid, data):
     miner = get_miner(miner_uuid)
-
     if miner:
         gpu_no = data.get('gpu_no')
         share_type = data.get('share_type')
@@ -50,8 +51,7 @@ def update_shares(miner_uuid, data):
 
         response_payload = response_object, 409
 
-    if os.getenv('DEBUG').upper() == 'TRUE':
-        print(response_payload)
+    logger.debug(response_payload)
     return response_payload
 
 
@@ -116,8 +116,7 @@ def update_healths(miner_uuid, data):
 
         response_payload = response_object, 409
 
-    if os.getenv('DEBUG').upper() == 'TRUE':
-        print(response_payload)
+    logger.debug(response_payload)
     return response_payload
 
 

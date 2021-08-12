@@ -3,11 +3,14 @@ from datetime import datetime, timedelta
 from sqlalchemy import select
 
 from app.main import db
-from . import logger, update, delete, save_changes
+from . import update, delete, save_changes
 from ..config import DEBUG
 from ..model import Gpu, Health
 from ..model.share import Share, ShareType
 from ..model.miner import Miner
+from app.main.base_logger import logger
+
+logger = logger.getLogger(__name__)
 
 
 def create_new_miner(data):

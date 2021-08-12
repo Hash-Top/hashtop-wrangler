@@ -1,6 +1,7 @@
 import os
 import urllib
 from dotenv import load_dotenv
+from app.main.base_logger import LOGLEVEL
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv()
@@ -27,6 +28,7 @@ class Config:
 class DevelopmentConfig(Config):
     DEBUG = True
     SQLALCHEMY_ECHO = True
+    LOGLEVEL = 'DEBUG'
     conn_str = 'Driver={ODBC Driver 17 for SQL Server};' \
                'Server=127.0.0.1,43111;' \
                'uid=SA;' \
