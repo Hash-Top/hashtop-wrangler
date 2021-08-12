@@ -16,7 +16,7 @@ from ..service.user_service import (
     get_user_by_id
 )
 from ..service import update, delete
-from ..util.decorators import token_required
+from ..util.decorators import token_required, api_token_required
 from flask_socketio import SocketIO, emit
 
 api = MinerDto.namespace
@@ -33,13 +33,13 @@ stats_schema = MinerDto.StatsQuerySchema()
 @api.doc('create a new miner')
 @api.expect(_miner, validate=True)
 class Miner(Resource):
-    # TODO: remove before full prod deploy
-    # @token_required
+    @api_token_required
     def post(self):
         """Creates a new Miner """
         data = request.json
         return create_new_miner(data)
 
+    @api_token_required
     def put(self):
         """Updates a User's miner """
         miner_id = request.json.get('miner_id')
@@ -70,15 +70,6 @@ class MinerList(Resource):
 @api.param('miner_id', "The miner's id")
 @api.response(404, 'No User/Miner with that id.')
 class UserMiner(Resource):
-    @api.doc('list_of_miners_owned_by_this_user')
-    @api.marshal_list_with(_miner, envelope='data')
-    # TODO: remove before prod
-    # @token_required
-    def get(self, username):
-        """List all miners owned by this user"""
-        user = get_user_by_username(username=username)
-        return get_all_miners(user)
-
     @api.response(200, 'Miner successfully deleted.')
     @api.doc("delete a user's miner")
     @token_required

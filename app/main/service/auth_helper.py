@@ -1,3 +1,4 @@
+import os
 import uuid
 
 import jwt
@@ -5,6 +6,7 @@ import jwt
 from app.main.model.user import User
 from .. import db
 from ..config import key
+from ..model import BlacklistToken
 from ..service.blacklist_service import save_token
 
 
@@ -117,5 +119,30 @@ class Auth:
             response_object = {
                 'status': 'fail',
                 'message': 'Provide a valid auth token.'
+            }
+            return response_object, 401
+
+    @staticmethod
+    def validate_api_token(request):
+
+        # get the auth token
+        auth_token = request.headers.get('Authorization')
+        if auth_token:
+            # decode the auth header
+            if os.getenv('DASHBOARD_API_TOKEN') == auth_token:
+                response_object = {
+                    'status': 'success',
+                }
+                return response_object, 200
+            else:
+                response_object = {
+                    'status': 'fail',
+                    'message': 'Token is not a valid API token.'
+                }
+                return response_object, 401
+        else:
+            response_object = {
+                'status': 'fail',
+                'message': 'No API token found in the header'
             }
             return response_object, 401
