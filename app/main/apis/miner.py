@@ -16,7 +16,7 @@ from ..service.user_service import (
     get_user_by_id
 )
 from ..service import update, delete
-from ..util.decorators import token_required
+from ..util.decorators import token_required, api_token_required
 from flask_socketio import SocketIO, emit
 
 api = MinerDto.namespace
@@ -33,8 +33,7 @@ stats_schema = MinerDto.StatsQuerySchema()
 @api.doc('create a new miner')
 @api.expect(_miner, validate=True)
 class Miner(Resource):
-    # TODO: remove before full prod deploy
-    # @token_required
+    @api_token_required
     def post(self):
         """Creates a new Miner """
         data = request.json

@@ -2,9 +2,10 @@ from flask_restplus import Namespace, fields
 from marshmallow import Schema
 from ..model.share import ShareType
 
+
 class UserDto:
     namespace = Namespace('user', description='user related operations')
-    user = namespace.model('user', {
+    user_post = namespace.model('user_post', {
         'id': fields.String(description='users UUID'),
         'username': fields.String(required=True, description='username'),
         'password': fields.String(required=True, description='password'),
@@ -14,7 +15,12 @@ class UserDto:
         'email': fields.String(required=True, description='email address'),
     })
 
-    stat = namespace.model('userStat', {
+    user_get = namespace.model('user_get', {
+        'id': fields.String(description='users UUID'),
+        'username': fields.String(required=True, description='username'),
+    })
+
+    stat = namespace.model('user_stat', {
         'time': fields.DateTime(required=True, description="time that the stats were queried"),
         'user_id': fields.String(required=True, description="which user the stats are for"),
         'balance': fields.Float(required=False, description="total balance in wei"),
