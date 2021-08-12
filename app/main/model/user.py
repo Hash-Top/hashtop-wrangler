@@ -106,6 +106,7 @@ class User(Base):
             if is_blacklisted_token:
                 return 'Token blacklisted. Please log in again.'
             else:
+                # sub is the user logging in, must be unique (maybe uuid)
                 return payload['sub']
         except jwt.ExpiredSignatureError:
             return 'Signature expired. Please log in again.'
@@ -114,7 +115,7 @@ class User(Base):
 
 
 class UserStat(Base):
-    __tablename__ = "userStat"
+    __tablename__ = "user_stat"
 
     time = Column(DateTime, default=datetime.utcnow(), primary_key=True)
     user_id = Column(UNIQUEIDENTIFIER,
